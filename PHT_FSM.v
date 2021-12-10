@@ -1,4 +1,4 @@
-module PHT_update(
+module PHT_FSM(
     input [1:0] old_state,
     input branch_en,
     input clk,
