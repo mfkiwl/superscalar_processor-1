@@ -10,7 +10,7 @@ module PHT_FSM(
     parameter Weakly_not_taken = 2'b01;
     parameter Strongly_not_taken = 2'b00;
 
-    always @(posedge clk) begin
+    always @(*) begin
         if(!resetn) begin
             updated_state = Strongly_taken;
         end else begin
