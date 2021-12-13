@@ -13,7 +13,7 @@
 - [x] *branch_history.v*中的BHT和PHT需要添加更新功能
 - [ ] *branch_history.v*中的hash可能有问题
 ~~*branch_global.v*中的PHT需要添加更新功能~~
-~~- [ ] *branch_global.v*中的hash可能有问题~~
+~~*branch_global.v*中的hash可能有问题~~
 
 
 
