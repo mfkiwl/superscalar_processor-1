@@ -1,17 +1,17 @@
 module Branch_Target_Address(
     input clk,
     input resetn,
-    input [31:0] pc
+    input [31:0] pc,
+    output [31:0] BTA
 );
 
     wire [9:0] BTB_index;
-    wire [31:0] BTA;
 
     reg [44:0] BTB1 [0:127];
     reg [44:0] BTB2 [0:127];
 
     assign BTB_index = {pc[25:21] ^ pc[20:16], pc[15:11] ^ pc[10:6]};
-    assign BTA = BTB1[pc[5:0]][44] == 1 ? (BTB1[pc[5:0]][43:34] == BTB_index ? BTB1[pc[5:0]][33:2]) : (BTB2[44] == 1 ? BTB2[pc[5:0]][43:34] == BTB_index ? BTB2[pc[5:0]][33:2] : (32'd0));
+    assign BTA = BTB1[pc[5:0]][44] == 1 ? (BTB1[pc[5:0]][43:34] == BTB_index ? BTB1[pc[5:0]][33:2]) : (BTB2[44] == 1 ? BTB2[pc[5:0]][43:34] == BTB_index ? BTB2[pc[5:0]][33:2] : (pc));
 
 /////////
     always @(posedge clk) begin
