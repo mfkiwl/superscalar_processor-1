@@ -46,7 +46,8 @@ module branch_history(
     input branch_en, //branch_en is used to update the PHT_FSM and PHT
     output taken_en, //taken_en is used to indicate whether pc is going to branch, 1 is taken, 0 is not taken
     output [6:0] o_PHT_index //transmittd through the pipeline to retire stage
-    output [3:0] o_BHT_index
+    output [3:0] o_BHT_index,
+    output [3:0] BHR
 
 );
 

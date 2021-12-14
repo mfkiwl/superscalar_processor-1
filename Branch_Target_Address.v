@@ -4,9 +4,10 @@ module Branch_Target_Address(
     input [31:0] pc,
     input [31:0] update_pc,
     input update_en,
-    input [1:0] update_type, // 2'b01 call, 2;b10 return
+    input [1:0] update_type, // 2'b00 direct_brach, 2'b01 call, 2'b10 return, 2'b11 indirect_branch
     input [31:0] update_BTA,
-    output [31:0] BTA
+    output [31:0] BTA,
+    output [1:0] type
 );
 
     wire [9:0] BTB_tag;
@@ -20,6 +21,7 @@ module Branch_Target_Address(
     assign BTB_update_tag = {update_pc[25:21] ^ update_pc[20:16], update_pc[15:11] ^ update_pc[10:6]};
     assign hit_en = BTB1[pc[5:0]][44] && BTB1[pc[5:0]][43:34] == BTB_tag ? 2'b01 : (BTB2[pc[5:0]][44] && BTB2[pc[5:0]][43:34] == BTB_tag ? 2'b10 : 2'b00);
     assign BTA = hit_en == 2'b00 ? pc : (hit_en == 2'b01 ? BTB1[pc[5:0]][33:2] : (hit_en == 2'b10 ? BTB2[pc[5:0]][33:2] : 32'd0));
+    assign type = hit_en == 2'b00 ? pc : (hit_en == 2'b01 ? BTB1[pc[5:0]][1:0] : (hit_en == 2'b10 ? BTB2[pc[5:0]][1:0] : 2'b00));
 
 /////////
     always @(posedge clk) begin
