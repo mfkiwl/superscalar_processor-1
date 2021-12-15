@@ -43,7 +43,7 @@ module branch(
         .BHR(BHR)
     );
 
-    Branch_Target_Address BTA(
+    Branch_Target_Buffer BTB(
         .clk(clk),
         .resetn(resetn),
         .pc(pc),

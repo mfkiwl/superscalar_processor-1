@@ -1,4 +1,4 @@
-module Branch_Target_Address(
+module Branch_Target_Buffer(
     input clk,
     input resetn,
     input [31:0] pc,
