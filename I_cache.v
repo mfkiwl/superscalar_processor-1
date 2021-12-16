@@ -4,6 +4,7 @@ module I_cache(
 
     input lookup_request,
     input [31:0] pc,
+    output [127:0] fetch_pack,
     //AXI4 interface
     input [31:0] RDATA,
     input ARREADY,
@@ -19,12 +20,25 @@ module I_cache(
     wire [20:0] tagv0;
     wire [20:0] tagv1;
 
-    wire index = pc[11:4];
-    wire offset = pc[3:0];
-    wire tag = pc[31:12];
+    wire [7:0] index;
+    wire [3:0] offset;
+    wire [19:0] tag;
+
+    wire [255:0] way0_data;
+    wire [255:0] way1_data;
+    
+    wire [127:0] way0_fetch_pack;
+    wire [127:0] way1_fetch_pack;
 //////////
     assign way0_hit = tagv0[20] & (tagv0[19:0] == tag);
     assign way1_hit = tagv1[20] & (tagv1[19:0] == tag);
+
+    assign index = pc[12:5];
+    assign offset = pc[3:0];
+    assign tag = pc[31:12]; //the length of tag should be modified
+
+    assign way0_fetch_pack = pc[4:2] == 3'b000 ? way0_data[255:128] : (pc[4:2] == 3'b001 ? way0_data[223:96] : (pc[4:2] == 3'b010 ? way0_data[191:64] : (pc[4:2] == 3'b011 ? way0_data[159:32] : way0_data[127:0])));
+    assign way1_fetch_pack = pc[4:2] == 3'b000 ? way1_data[255:128] : (pc[4:2] == 3'b001 ? way1_data[223:96] : (pc[4:2] == 3'b010 ? way1_data[191:64] : (pc[4:2] == 3'b011 ? way0_data[159:32] : way1_data[127:0])));
 //////////
     parameter IDEL = 2'b00;
     parameter LOOKUP = 2'b01;
