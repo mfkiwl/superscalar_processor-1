@@ -86,20 +86,19 @@ module I_cache(
     output wire [32:0] inst1,
     output wire [32:0] inst2,
     output wire [32:0] inst3,
-    //AXI4 interface
-    input wire [127:0] RDATA,
-    input wire ARREADY,
-    input wire RVALID,
-    output wire [31:0] ARADDR,
-    output wire ARVALID,
-    output wire RREADY
+    //
+    input wire [127:0] memory_data,
+    input wire addr_ok, //slave is ready to receive addr
+    input wire data_ok, //master has received data
+    output wire [31:0] addr,
+    output wire addr_send
 );
 
     wire way0_hit;
     wire way1_hit;
 
-    wire [19:0] tagv0;
-    wire [19:0] tagv1;
+    wire [20:0] tagv0;
+    wire [20:0] tagv1;
 
     wire [7:0] index;
     wire [18:0] tag;
@@ -110,8 +109,13 @@ module I_cache(
 
     wire [255:0] cache_data;
     wire hit;
+
+    wire wea_0;
+    wire wea_1;
+    wire [20:0] TagV0_dina;
+    wire [20:0] TagV1_dina;
     
-//////////
+//////////the procedure of judging cache hit or miss
     assign way0_hit = tagv0[19] & (tagv0[18:0] == tag);
     assign way1_hit = tagv1[19] & (tagv1[18:0] == tag);
 
@@ -121,7 +125,7 @@ module I_cache(
 
     assign cache_data = way0_hit ? way0_data : way1_data;
     assign hit = way0_hit | way1_hit;
-//////////
+//////////State machine
     parameter IDEL = 2'b00;
     parameter LOOKUP = 2'b01;
     parameter MISS = 2'b10;
@@ -149,12 +153,12 @@ module I_cache(
                     end
                 end
                 MISS : begin
-                    if(ARREADY) begin
+                    if(addr_ok) begin
                         state <= REFILL;
                     end
                 end
                 REFILL : begin
-                    if(RVALID) begin
+                    if(data_ok) begin
                         state <= IDEL;
                     end
                 end
@@ -164,22 +168,31 @@ module I_cache(
             endcase
         end
     end
-//////////implement two V-tables, two Tag-tables, two Data-tables
+
+    assign addr = pc;
+    assign addr_send = state == MISS;
+//////////LRU cache replace algorithm
+    assign wea_0 = (state == LOOKUP & hit) | state == REFILL;
+    assign wea_1 = (state == LOOKUP & hit) | state == REFILL;
+    assign TagV0_dina = state == LOOKUP ? (way0_hit ? {1'b1, 1'b1, tagv0[18:0]} : {1'b0, tagv0[19:0]}) : ;
+    assign TagV1_dina = state == LOOKUP ? (way1_hit ? {1'b1, 1'b1, tagv1[18:0]} : {1'b0, tagv1[19:0]}) : ;
+
+//////////implement two TagV-tables, two Data-tables
     TAGV_table TAGV0(
         .clka(clk),    // input wire clka
         .ena(1'b1),      // input wire ena
-        .wea(),      // input wire [0 : 0] wea
+        .wea(wea_0),      // input wire [0 : 0] wea
         .addra(index),  // input wire [7 : 0] addra
-        .dina(),    // input wire [20 : 0] dina
+        .dina(TagV0_dina),    // input wire [20 : 0] dina
         .douta(tagv0)  // output wire [20 : 0] douta
     );
 
     TAGV_table TAGV1(
         .clka(clk),    // input wire clka
         .ena(1'b1),      // input wire ena
-        .wea(),      // input wire [0 : 0] wea
+        .wea(wea_1),      // input wire [0 : 0] wea
         .addra(index),  // input wire [7 : 0] addra
-        .dina(),    // input wire [20 : 0] dina
+        .dina(TagV1_dina),    // input wire [20 : 0] dina
         .douta(tagv1)  // output wire [20 : 0] douta
     );
 
