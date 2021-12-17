@@ -87,7 +87,7 @@ module I_cache(
     output wire [32:0] inst2,
     output wire [32:0] inst3,
     //
-    input wire [127:0] memory_data,
+    input wire [255:0] memory_data,
     input wire addr_ok, //slave is ready to receive addr
     input wire data_ok, //master has received data
     output wire [31:0] addr,
@@ -110,10 +110,14 @@ module I_cache(
     wire [255:0] cache_data;
     wire hit;
 
-    wire wea_0;
-    wire wea_1;
+    wire TAGV0_wea;
+    wire TAGV1_wea;
     wire [20:0] TagV0_dina;
     wire [20:0] TagV1_dina;
+    wire DATA0_wea;
+    wire DATA1_wea;
+    wire [255:0] DATA0_dina;
+    wire [255:0] DATA1_dina;
     
 //////////the procedure of judging cache hit or miss
     assign way0_hit = tagv0[19] & (tagv0[18:0] == tag);
@@ -172,16 +176,19 @@ module I_cache(
     assign addr = pc;
     assign addr_send = state == MISS;
 //////////LRU cache replace algorithm
-    assign wea_0 = (state == LOOKUP & hit) | state == REFILL;
-    assign wea_1 = (state == LOOKUP & hit) | state == REFILL;
-    assign TagV0_dina = state == LOOKUP ? (way0_hit ? {1'b1, 1'b1, tagv0[18:0]} : {1'b0, tagv0[19:0]}) : ;
-    assign TagV1_dina = state == LOOKUP ? (way1_hit ? {1'b1, 1'b1, tagv1[18:0]} : {1'b0, tagv1[19:0]}) : ;
-
+    assign TAGV0_wea = (state == LOOKUP & hit) | (state == REFILL & ~tagv0[20]);
+    assign TAGV1_wea = (state == LOOKUP & hit) | ((state == REFILL) & ~tagv1[20] & tagv0[20]);
+    assign TagV0_dina = state == LOOKUP ? (way0_hit ? {1'b1, 1'b1, tagv0[18:0]} : {1'b0, tagv0[19:0]}) : {1'b1, 1'b1, pc[31:13]};
+    assign TagV1_dina = state == LOOKUP ? (way1_hit ? {1'b1, 1'b1, tagv1[18:0]} : {1'b0, tagv1[19:0]}) : {1'b1, 1'b1, pc[31:13]};
+    assign DATA0_wea = (state == REFILL) & ~tagv0[20];
+    assign DATA1_wea = (state == REFILL) & ~tagv1[20] & tagv0[20];
+    assign DATA0_dina = memory_data;
+    assign DATA1_dina = memory_data;
 //////////implement two TagV-tables, two Data-tables
     TAGV_table TAGV0(
         .clka(clk),    // input wire clka
         .ena(1'b1),      // input wire ena
-        .wea(wea_0),      // input wire [0 : 0] wea
+        .wea(TAGV0_wea),      // input wire [0 : 0] wea
         .addra(index),  // input wire [7 : 0] addra
         .dina(TagV0_dina),    // input wire [20 : 0] dina
         .douta(tagv0)  // output wire [20 : 0] douta
@@ -190,10 +197,28 @@ module I_cache(
     TAGV_table TAGV1(
         .clka(clk),    // input wire clka
         .ena(1'b1),      // input wire ena
-        .wea(wea_1),      // input wire [0 : 0] wea
+        .wea(TAGV1_wea),      // input wire [0 : 0] wea
         .addra(index),  // input wire [7 : 0] addra
         .dina(TagV1_dina),    // input wire [20 : 0] dina
         .douta(tagv1)  // output wire [20 : 0] douta
+    );
+
+    DATA_table DATA0(
+        .clka(clk),    // input wire clka
+        .ena(1'b1),      // input wire ena
+        .wea(DATA0_wea),      // input wire [0 : 0] wea
+        .addra(index),  // input wire [7 : 0] addra
+        .dina(DATA0_dina),    // input wire [255 : 0] dina
+        .douta(way0_data)  // output wire [255 : 0] douta
+    );
+
+    DATA_table DATA1(
+        .clka(clk),    // input wire clka
+        .ena(1'b1),      // input wire ena
+        .wea(DATA1_wea),      // input wire [0 : 0] wea
+        .addra(index),  // input wire [7 : 0] addra
+        .dina(DATA1_dina),    // input wire [255 : 0] dina
+        .douta(way1_data)  // output wire [255 : 0] douta
     );
 
     cache_fetch cf(
