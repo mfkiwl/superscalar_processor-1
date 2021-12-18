@@ -18,6 +18,10 @@ module branch(
     output [31:0] next_pc
 );
 
+//////////
+    wire inst_bj;
+    assign
+//////////
     wire [3:0] BHR;
     wire taken_en;
     wire [31:0] BTA;
@@ -26,7 +30,7 @@ module branch(
     wire [31:0] indirect_addr;
     wire [1:0] select;
 
-    assign select = taken_en ? (type == 2'b00 ? 2'b00 : (type == 2'b01 | type == 2'b10 ? 2'b01 : (type == 2'b11 ? 2'b10 : 2'b11))) : 2'b11;
+    //assign select = taken_en ? (type == 2'b00 ? 2'b00 : (type == 2'b01 | type == 2'b10 ? 2'b01 : (type == 2'b11 ? 2'b10 : 2'b11))) : 2'b11; //need to modify
     
 //////////
     branch_history BH(
@@ -52,7 +56,9 @@ module branch(
         .update_type(),
         .update_BTA(),
         .BTA(BTA),
-        .type(type)
+        .type(type),
+        .hit_en(),
+        .inst_bj()
     );
 
     Return_Address_Stack RAS(

@@ -10,7 +10,7 @@ module Target_Cache(
     output [31:0] target_address
 );
 
-    reg [31:0] cache [0:255]
+    reg [31:0] cache [0:255];
 
     wire [7:0] index;
     wire [7:0] update_index;

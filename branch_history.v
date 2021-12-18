@@ -11,7 +11,7 @@ module PHT_FSM(
     parameter Strongly_not_taken = 2'b00;
 
     always @(*) begin
-        if(!resetn) begin
+        if(~resetn) begin
             updated_state = Strongly_taken;
         end else begin
             case(updated_state)
@@ -45,9 +45,8 @@ module branch_history(
     input update_en,
     input branch_en, //branch_en is used to update the PHT_FSM and PHT
     output taken_en, //taken_en is used to indicate whether pc is going to branch, 1 is taken, 0 is not taken
-    output [6:0] o_PHT_index //transmittd through the pipeline to retire stage
-    output [3:0] o_BHT_index,
-    output [3:0] BHR
+    output [6:0] o_PHT_index, //transmittd through the pipeline to retire stage
+    output [3:0] o_BHT_index
 
 );
 
@@ -67,13 +66,13 @@ module branch_history(
     reg [1:0] PHT [0:127];
 
     //use Hash algorithm to calculate BHT_index , splice BHR value and PC to generate PHT_index
-    BHT_index = pc[31:28] ^ pc[27:24] ^ pc[23:20] ^ pc[19:16] ^ pc[15:12] ^ pc[11:8] ^ pc[7:4] ^ pc[3:0];
-    BHR = BHT[BHT_index];
-    PHT_index = {pc[2:0], BHR};
-    o_PHT_index = PHT_index;
-    PHT_value = PHT[PHT_index];
-    old_PHT_value = PHT[update_PHT_index];
-    taken_en = PHT_value == Strongly_taken | PHT_value == Weakly_taken ? 1 : 0;
+    assign BHT_index = pc[31:28] ^ pc[27:24] ^ pc[23:20] ^ pc[19:16] ^ pc[15:12] ^ pc[11:8] ^ pc[7:4] ^ pc[3:0];
+    assign BHR = BHT[BHT_index];
+    assign PHT_index = {pc[2:0], BHR};
+    assign o_PHT_index = PHT_index;
+    assign PHT_value = PHT[PHT_index];
+    assign old_PHT_value = PHT[update_PHT_index];
+    assign taken_en = PHT_value == Strongly_taken | PHT_value == Weakly_taken ? 1 : 0;
 
     always @(posedge clk) begin
         if(!resetn) begin : initialize
@@ -82,15 +81,17 @@ module branch_history(
                 BHT[i] <= 4'b0000;
             end
         end else begin
-            BHT[update_BHT_index] <= BHT[update_BHT_index] << 1 + {3'b000, taken_en};
+            if(update_en) begin
+                BHT[update_BHT_index] <= BHT[update_BHT_index] << 1 + {3'b000, branch_en};
+            end
         end
     end
 
     always @(posedge clk) begin
-        if(!resetn) begin : initialize
+        if(!resetn) begin : initialize2
             integer i;
             for(i = 0;i <= 127;i = i + 1) begin : loop
-                PHT <= 2'b00;
+                PHT[i] <= 2'b00;
             end
         end else begin
             if(update_en) begin

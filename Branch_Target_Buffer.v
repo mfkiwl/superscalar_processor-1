@@ -6,12 +6,13 @@ module Branch_Target_Buffer(
     input update_en,
     input [1:0] update_type, // 2'b00 direct_brach, 2'b01 call, 2'b10 return, 2'b11 indirect_branch
     input [31:0] update_BTA,
+    input inst_bj,
     output [31:0] BTA,
-    output [1:0] type
+    output [1:0] type,
+    output [1:0] hit_en
 );
 
     wire [9:0] BTB_tag;
-    wire [1:0] hit_en;
     wire [9:0] BTB_update_tag;
 
     reg [45:0] BTB1 [0:127]; // 1 bit used signal, 1 bit valid signal, 10 bits tag, 32 bits BTA, 2 bits types
@@ -32,10 +33,10 @@ module Branch_Target_Buffer(
                 BTB2[i] = 46'd0; 
             end
         end else begin
-            if(hit_en == 2'b01) begin
+            if((hit_en == 2'b01) & inst_bj) begin
                 BTB1[pc[5:0]][45] <= 1'b1;
                 BTB2[pc[5:0]][45] <= 1'b0;
-            end else if(hit_en == 2'b10) begin
+            end else if((hit_en == 2'b10) & inst_bj) begin
                 BTB2[pc[5:0]][45] <= 1'b1;
                 BTB1[pc[5:0]][45] <= 1'b0;
             end
