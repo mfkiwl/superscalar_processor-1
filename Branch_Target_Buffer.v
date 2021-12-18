@@ -21,7 +21,7 @@ module Branch_Target_Buffer(
     assign BTB_tag = {pc[25:21] ^ pc[20:16], pc[15:11] ^ pc[10:6]};
     assign BTB_update_tag = {update_pc[25:21] ^ update_pc[20:16], update_pc[15:11] ^ update_pc[10:6]};
     assign hit_en = BTB1[pc[5:0]][44] && BTB1[pc[5:0]][43:34] == BTB_tag ? 2'b01 : (BTB2[pc[5:0]][44] && BTB2[pc[5:0]][43:34] == BTB_tag ? 2'b10 : 2'b00);
-    assign BTA = hit_en == 2'b00 ? pc : (hit_en == 2'b01 ? BTB1[pc[5:0]][33:2] : (hit_en == 2'b10 ? BTB2[pc[5:0]][33:2] : 32'd0));
+    assign BTA = hit_en == 2'b00 ? pc + 32'd4 : (hit_en == 2'b01 ? BTB1[pc[5:0]][33:2] : (hit_en == 2'b10 ? BTB2[pc[5:0]][33:2] : 32'd0));
     assign type = hit_en == 2'b00 ? pc : (hit_en == 2'b01 ? BTB1[pc[5:0]][1:0] : (hit_en == 2'b10 ? BTB2[pc[5:0]][1:0] : 2'b00));
 
 /////////

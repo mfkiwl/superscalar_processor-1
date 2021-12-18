@@ -3,6 +3,7 @@ module Return_Address_Stack(
     input resetn,
     input [1:0] type,
     input [31:0] next_pc,
+    input inst_bj,
     output [31:0] target_pc
 );
 
@@ -26,7 +27,7 @@ module Return_Address_Stack(
             full <= 1'b0;
             empty <= 1'b1;
         end else begin
-            if(type == PUSH) begin
+            if((type == PUSH) & inst_bj) begin
                 empty <= 1'b0;
                 if(sp < 3'b111) begin
                     sp <= sp + 3'b001;
@@ -35,7 +36,7 @@ module Return_Address_Stack(
                     RAS[sp] <= next_pc;
                     full <= 1'b1;
                 end
-            end else if(type == POP) begin
+            end else if((type == POP) & inst_bj) begin
                 full <= 1'b0;
                 if(sp > 3'b000) begin
                     RAS[sp] <= 32'd0;

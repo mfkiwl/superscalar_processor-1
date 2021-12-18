@@ -15,12 +15,36 @@ module branch(
     input clk,
     input resetn,
     input [31:0] pc,
+    input [31:0] inst,
     output [31:0] next_pc
 );
 
 //////////
+    wire [6:0] op;
+    wire [2:0] func;
+
+    assign op = inst[6:0];
+    assign func = inst[14:12];
+
     wire inst_bj;
-    assign
+    wire inst_jal;
+    wire inst_jalr;
+    wire inst_beq;
+    wire inst_bne;
+    wire inst_blt;
+    wire inst_bge;
+    wire inst_bltu;
+    wire inst_bgeu;
+    
+    assign inst_jal =  op == 7'b1101111;
+    assign inst_jalr = op == 7'b1100111 && func == 3'b000;
+    assign inst_beq =  op == 7'b1100011 && func == 3'b000;
+    assign inst_bne =  op == 7'b1100011 && func == 3'b001;
+    assign inst_blt =  op == 7'b1100011 && func == 3'b100;
+    assign inst_bge =  op == 7'b1100011 && func == 3'b101;
+    assign inst_bltu = op == 7'b1100011 && func == 3'b110;
+    assign inst_bgeu = op == 7'b1100011 && func == 3'b111;
+    assign inst_bj = inst_jal | inst_jalr | inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu;
 //////////
     wire [3:0] BHR;
     wire taken_en;
@@ -30,7 +54,7 @@ module branch(
     wire [31:0] indirect_addr;
     wire [1:0] select;
 
-    //assign select = taken_en ? (type == 2'b00 ? 2'b00 : (type == 2'b01 | type == 2'b10 ? 2'b01 : (type == 2'b11 ? 2'b10 : 2'b11))) : 2'b11; //need to modify
+    assign select = ~inst_bj | (inst_bj & ~taken_en) ? 2'b11 : (type == 2'b00 ? BTA : (type == 2'b01 | type == 2'b10 ? RAS_addr : indirect_addr)); 
     
 //////////
     branch_history BH(
@@ -58,7 +82,7 @@ module branch(
         .BTA(BTA),
         .type(type),
         .hit_en(),
-        .inst_bj()
+        .inst_bj(inst_bj)
     );
 
     Return_Address_Stack RAS(
@@ -66,7 +90,8 @@ module branch(
         .resetn(resetn),
         .type(type),
         .next_pc(pc + 32'd4),
-        .target_pc(RAS_addr)
+        .target_pc(RAS_addr),
+        .inst_bj(inst_bj)
     );
     
     Target_Cache TC(
@@ -86,7 +111,7 @@ module branch(
         .a0(BTA),
         .a1(RAS_addr),
         .a2(indirect_addr),
-        .a3(pc + 32'd4),
+        .a3(pc + 32'd16),
         .out(next_pc)
     );
 
