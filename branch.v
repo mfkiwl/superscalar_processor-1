@@ -54,20 +54,18 @@ module branch(
     wire [31:0] indirect_addr;
     wire [1:0] select;
 
-    assign select = ~inst_bj | (inst_bj & ~taken_en) ? 2'b11 : (type == 2'b00 ? BTA : (type == 2'b01 | type == 2'b10 ? RAS_addr : indirect_addr)); 
+    //assign select = ~inst_bj | (inst_bj & ~taken_en) ? 2'b11 : (type == 2'b00 ? BTA : (type == 2'b01 | type == 2'b10 ? RAS_addr : indirect_addr)); 
     
 //////////
     branch_history BH(
         .clk(clk),
         .resetn(resetn),
         .pc(pc),
-        .update_PHT_index(),
-        .update_BHT_index(),
+        .update_BHR(),
+        .update_pc(),
         .update_en(),
         .branch_en(),
         .taken_en(taken_en),
-        .o_PHT_index(),
-        .o_BHT_index(),
         .BHR(BHR)
     );
 
@@ -79,19 +77,18 @@ module branch(
         .update_en(),
         .update_type(),
         .update_BTA(),
+        .inst_bj(),
         .BTA(BTA),
-        .type(type),
-        .hit_en(),
-        .inst_bj(inst_bj)
+        .type(type)
     );
 
     Return_Address_Stack RAS(
         .clk(clk),
         .resetn(resetn),
         .type(type),
-        .next_pc(pc + 32'd4),
-        .target_pc(RAS_addr),
-        .inst_bj(inst_bj)
+        .next_pc(),
+        .inst_bj(inst_bj),
+        .target_pc(RAS_addr)
     );
     
     Target_Cache TC(
@@ -111,7 +108,7 @@ module branch(
         .a0(BTA),
         .a1(RAS_addr),
         .a2(indirect_addr),
-        .a3(pc + 32'd16),
+        .a3(),
         .out(next_pc)
     );
 
