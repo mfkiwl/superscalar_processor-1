@@ -37,14 +37,15 @@ module PHT_FSM(
 endmodule
 
 module branch_history(
-    input [31:0] pc,
-    input clk,
-    input resetn,
-    input [6:0] update_PHT_index,
-    input [3:0] update_BHT_index,
-    input update_en,
-    input branch_en, //branch_en is used to update the PHT_FSM and PHT
-    output taken_en //taken_en is used to indicate whether pc is going to branch, 1 is taken, 0 is not taken
+    input wire [31:0] pc,
+    input wire clk,
+    input wire resetn,
+    input wire [7:0] update_PHT_index,
+    input wire [31:0] update_pc,
+    input wire update_en,
+    input wire branch_en, //branch_en is used to update the PHT_FSM and PHT
+    output wire taken_en, //taken_en is used to indicate whether pc is going to branch, 1 is taken, 0 is not taken
+    output wire [1:0] choose
 );
 
     parameter Strongly_taken = 2'b11;
@@ -68,8 +69,6 @@ module branch_history(
     wire [1:0] PHT1_value;
     wire [1:0] PHT2_value;
     wire [1:0] PHT3_value;
-
-    wire last;
 
     wire [1:0] PHT_FSM_outout;
     wire [1:0] old_PHT_value;
@@ -110,21 +109,45 @@ module branch_history(
     assign taken2_en = PHT2_value == Strongly_taken | PHT2_value == Weakly_taken ? 1 : 0;
     assign taken3_en = PHT3_value == Strongly_taken | PHT3_value == Weakly_taken ? 1 : 0; 
 
-    assign old_PHT_value = ;
+    assign choose[0] = (~pc[3] & ~pc[2] & ~taken0_en & taken1_en) | (~pc[2] & ~taken0_en & ~taken2_en & ~taken3_en) | (~pc[2] & ~taken0_en & ~taken1_en & ~taken2_en & taken3_en) | (pc[2] & ~taken1_en & ~taken2_en & taken3_en) |
+                  (pc[3] & ~pc[2] & taken0_en & ~taken1_en & ~taken2_en & taken3_en) | (pc[3] & pc[2] & ~taken0_en & ~taken1_en & taken3_en) | (pc[2] & taken0_en & taken3_en) | (~pc[3] & pc[2] & taken1_en) | (pc[2] & ~taken0_en & taken1_en) |
+                  (~pc[2] & taken1_en & ~taken2_en);
+    
+    assign choose[1] = (pc[2] & ~taken1_en & taken3_en) | (pc[3] & ~pc[2] & taken2_en) | (pc[3] & taken1_en & taken3_en) | (pc[2] & ~taken0_en & ~taken1_en & taken2_en) | (~pc[2] & ~taken0_en & ~taken1_en & taken2_en) |
+                       (~pc[3] & pc[2] & ~taken1_en & taken2_en & ~taken3_en) | (~pc[2] & ~taken0_en & ~taken1_en & ~taken2_en & taken3_en) | (pc[3] & ~pc[2] & taken0_en & ~taken1_en & ~taken2_en & taken3_en);
 
-    assign last = (~pc[3] & ~pc[2] & ~PHT0_value & PHT1_value) | (~pc[2] & ~PHT0_value & ~PHT2_value & ~PHT3_value) | (~pc[2] & ~PHT0_value & ~PHT0_value & ~PHT2_value & PHT3_value) | (pc[2] & ~PHT1_value & ~PHT2_value & PHT3_value) |
-                  (pc[3] & ~pc[2] & PHT0_value & ~PHT1_value & ~PHT2_value & PHT3_value) | (pc[3] & pc[2] & ~PHT0_value & ~PHT1_value & PHT3_value) | (pc[2] & PHT0_value & PHT3_value) | (~pc[3] & pc[2] & PHT1_value) | (pc[2] & ~PHT0_value & PHT1_value) |
-                  (~pc[2] & PHT1_value & ~PHT2_value);
+    assign taken_en = taken0_en | taken1_en | taken2_en | taken3_en;
 
+    assign old_PHT_value = update_PHT_index[3:2] == 2'b00 ? PHT_bank0[update_PHT_index] : (update_PHT_index == 2'b01 ? PHT_bank1[update_PHT_index] : (update_PHT_index == 2'b10 ? PHT_bank2[update_PHT_index] : PHT_bank3[update_PHT_index]));
+    
     always @(posedge clk) begin
         if(!resetn) begin : initialize
             integer i;
-            for(i = 0;i <= 7;i = i + 1) begin : loop
-                BHT[i] <= 4'b0000;
+            for(i = 0;i <= 255;i = i + 1) begin : loop
+                BHT_bank0[i] <= 10'd0;
+                BHT_bank1[i] <= 10'd0;
+                BHT_bank2[i] <= 10'd0;
+                BHT_bank3[i] <= 10'd0;
             end
         end else begin
             if(update_en) begin
-                BHT[update_BHT_index] <= BHT[update_BHT_index] << 1 + {3'b000, branch_en};
+                case(update_pc[3:2])
+                    2'b00 : begin
+                        BHT_bank0[pc[11:4]] <= BHT_bank0[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b01 : begin
+                        BHT_bank1[pc[11:4]] <= BHT_bank1[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b10 : begin
+                        BHT_bank2[pc[11:4]] <= BHT_bank2[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b11 : begin
+                        BHT_bank3[pc[11:4]] <= BHT_bank3[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    default : begin
+                        
+                    end
+                endcase
             end
         end
     end
@@ -132,12 +155,31 @@ module branch_history(
     always @(posedge clk) begin
         if(!resetn) begin : initialize2
             integer i;
-            for(i = 0;i <= 127;i = i + 1) begin : loop
-                PHT[i] <= 2'b00;
+            for(i = 0;i <= 255;i = i + 1) begin : loop
+                PHT_bank0[i] <= 2'b00;
+                PHT_bank1[i] <= 2'b00;
+                PHT_bank2[i] <= 2'b00;
+                PHT_bank3[i] <= 2'b00;
             end
         end else begin
             if(update_en) begin
-                PHT[update_PHT_index] <= PHT_FSM_outout;
+                case(update_PHT_index[3:2])
+                    2'b00 : begin
+                        BHT_bank0[pc[11:4]] <= BHT_bank0[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b01 : begin
+                        BHT_bank1[pc[11:4]] <= BHT_bank1[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b10 : begin
+                        BHT_bank2[pc[11:4]] <= BHT_bank2[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    2'b11 : begin
+                        BHT_bank3[pc[11:4]] <= BHT_bank3[pc[11:4]] << 1 + {9'd0, branch_en};
+                    end
+                    default : begin
+                        
+                    end
+                endcase
             end
         end
     end
