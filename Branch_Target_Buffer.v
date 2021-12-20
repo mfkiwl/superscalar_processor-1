@@ -46,10 +46,10 @@ module Branch_Target_Buffer(
     assign hit2_en = BTB1_bank2[pc[8:4]][44] && BTB1_bank2[pc[8:4]][43:34] == BTB_tag ? 2'b01 : (BTB2_bank2[pc[8:4]][44] && BTB2_bank2[pc[8:4]][43:34] == BTB_tag ? 2'b10 : 2'b00);
     assign hit3_en = BTB1_bank3[pc[8:4]][44] && BTB1_bank3[pc[8:4]][43:34] == BTB_tag ? 2'b01 : (BTB2_bank3[pc[8:4]][44] && BTB2_bank3[pc[8:4]][43:34] == BTB_tag ? 2'b10 : 2'b00);
 
-    assign BTA0 = hit0_en == 2'b00 ? pc + 32'd4 : (hit0_en == 2'b01 ? BTB1_bank0[pc[8:4]][33:2] : (hit0_en == 2'b10 ? BTB2_bank0[pc[8:4]][33:2] : 32'd0));
-    assign BTA1 = hit1_en == 2'b00 ? pc + 32'd8 : (hit1_en == 2'b01 ? BTB1_bank1[pc[8:4]][33:2] : (hit1_en == 2'b10 ? BTB2_bank1[pc[8:4]][33:2] : 32'd0));
-    assign BTA2 = hit2_en == 2'b00 ? pc + 32'd12 : (hit2_en == 2'b01 ? BTB1_bank2[pc[8:4]][33:2] : (hit2_en == 2'b10 ? BTB2_bank2[pc[8:4]][33:2] : 32'd0));
-    assign BTA3 = hit3_en == 2'b00 ? pc + 32'd16 : (hit3_en == 2'b01 ? BTB1_bank3[pc[8:4]][33:2] : (hit3_en == 2'b10 ? BTB2_bank3[pc[8:4]][33:2] : 32'd0));
+    assign BTA0 = hit0_en == 2'b00 ? {pc[31:4], 4'b0000} + 32'd4 : (hit0_en == 2'b01 ? BTB1_bank0[pc[8:4]][33:2] : (hit0_en == 2'b10 ? BTB2_bank0[pc[8:4]][33:2] : 32'd0));
+    assign BTA1 = hit1_en == 2'b00 ? {pc[31:4], 4'b0100} + 32'd8 : (hit1_en == 2'b01 ? BTB1_bank1[pc[8:4]][33:2] : (hit1_en == 2'b10 ? BTB2_bank1[pc[8:4]][33:2] : 32'd0));
+    assign BTA2 = hit2_en == 2'b00 ? {pc[31:4], 4'b1000} + 32'd12 : (hit2_en == 2'b01 ? BTB1_bank2[pc[8:4]][33:2] : (hit2_en == 2'b10 ? BTB2_bank2[pc[8:4]][33:2] : 32'd0));
+    assign BTA3 = hit3_en == 2'b00 ? {pc[31:4], 4'b1100} + 32'd16 : (hit3_en == 2'b01 ? BTB1_bank3[pc[8:4]][33:2] : (hit3_en == 2'b10 ? BTB2_bank3[pc[8:4]][33:2] : 32'd0));
 
     assign type0 = hit0_en == 2'b01 ? BTB1_bank0[pc[8:4]][1:0] : (hit0_en == 2'b10 ? BTB2_bank0[pc[8:4]][1:0] : 2'b00);
     assign type1 = hit1_en == 2'b01 ? BTB1_bank1[pc[8:4]][1:0] : (hit1_en == 2'b10 ? BTB2_bank1[pc[8:4]][1:0] : 2'b00);

@@ -179,3 +179,8 @@
 
 1. 完成`branch_history.v`的交叠重构
 2. 完成`Branch_Target_Buffer.v`的交叠重构
+3. 完成`Target_Cache.v`的交叠重构
+
+**问题**：
+
+- [ ] RAS需要对多条pc同时访问进行处理
