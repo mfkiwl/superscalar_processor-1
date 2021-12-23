@@ -8,13 +8,13 @@ module Branch_Target_Buffer(
     input wire [31:0] update_BTA,
     input wire inst_bj,
     output wire [31:0] BTA,
-    output wire [1:0] type
+    output wire [1:0] type,
+    output wire [1:0] offset
 );
 
     wire [9:0] BTB_tag;
     wire [9:0] BTB_update_tag;
     wire [1:0] hit_en;
-    wire [1:0] offset;
 
     reg [47:0] BTB1 [0:127];// 1 bit valid signal, 1 bit used signal, 10 bits tag, 32 bits BTA, 2 bits types, 2bits offset
     reg [47:0] BTB2 [0:127];

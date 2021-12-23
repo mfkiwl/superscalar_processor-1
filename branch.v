@@ -26,7 +26,6 @@ module branch(
     assign op = inst[6:0];
     assign func = inst[14:12];
 
-    wire inst_bj;
     wire inst_jal;
     wire inst_jalr;
     wire inst_beq;
@@ -44,17 +43,21 @@ module branch(
     assign inst_bge =  op == 7'b1100011 && func == 3'b101;
     assign inst_bltu = op == 7'b1100011 && func == 3'b110;
     assign inst_bgeu = op == 7'b1100011 && func == 3'b111;
-    assign inst_bj = inst_jal | inst_jalr | inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu;
+    //assign inst_bj = inst_jal | inst_jalr | inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu;
 //////////
     wire [3:0] BHR;
     wire taken_en;
     wire [31:0] BTA;
     wire [1:0] type;
+    wire [1:0] offset;
     wire [31:0] RAS_addr;
     wire [31:0] indirect_addr;
     wire [1:0] select;
+    wire inst_bj;
 
-    //assign select = ~inst_bj | (inst_bj & ~taken_en) ? 2'b11 : (type == 2'b00 ? BTA : (type == 2'b01 | type == 2'b10 ? RAS_addr : indirect_addr)); 
+    assign inst_bj = pc[3:2] >= offset;
+
+    assign select = ~inst_bj | (inst_bj & ~taken_en) ? 2'b11 : (type == 2'b00 ? BTA : (type == 2'b01 | type == 2'b10 ? RAS_addr : indirect_addr));
     
 //////////
     branch_history BH(
@@ -77,16 +80,17 @@ module branch(
         .update_en(),
         .update_type(),
         .update_BTA(),
-        .inst_bj(),
+        .inst_bj(inst_bj),
         .BTA(BTA),
-        .type(type)
+        .type(type),
+        .offset(offset)
     );
 
     Return_Address_Stack RAS(
         .clk(clk),
         .resetn(resetn),
         .type(type),
-        .next_pc(),
+        .next_pc({pc[31:4], offset, 2'b00} + 32'd4),
         .inst_bj(inst_bj),
         .target_pc(RAS_addr)
     );
@@ -108,7 +112,7 @@ module branch(
         .a0(BTA),
         .a1(RAS_addr),
         .a2(indirect_addr),
-        .a3(),
+        .a3(pc + 32'd16),
         .out(next_pc)
     );
 
