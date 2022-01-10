@@ -13,15 +13,12 @@ module decode_mod(
     output wire [7:0] mem_control,
     output wire shift_v,
     output wire [31:0] imm,
-    output wire [4:0] rd,
+    output wire [4:0] rn,
     output wire [31:0] bpc,
     output wire [31:0] jpc,
     output wire [4:0] rs,
     output wire [4:0] rt,
-    output wire is_branch,
-    output wire rd_en,
-	output wire rt_en,
-	output wire rs_en
+    output wire is_branch
     //output wire [31:0] jrpc,
     //output wire [31:0] shamt
 );
@@ -32,7 +29,6 @@ module decode_mod(
     assign op = inst[31:26];
     assign rs = inst[25:21];
     assign rt = inst[20:16];
-    assign rd = inst[15:11];
     assign func = inst[5:0];
 
     wire inst_add;
@@ -240,7 +236,9 @@ module decode_mod(
 
     wire ADDU_inst, ADD_inst, SUB_inst, SUBU_inst, AND_inst, OR_inst, XOR_inst, NOR_inst, SLT_inst, SLTU_inst, SLL_inst, SRL_inst,
          SRA_inst, LUI_inst, JUMP_BRANCH_inst, MULT_inst, MULTU_inst, DIV_inst, DIVU_inst, MFHI_inst, MFLO_inst, MTHI_inst, MTLO_inst;
-	
+
+    wire rd_or_rt;
+
     assign ADDU_inst = inst_addu | inst_addiu | inst_lw | inst_sw | inst_sb | inst_sh | inst_lb | inst_lbu | inst_lh | inst_lhu;
     assign ADD_inst = inst_add | inst_addi;
     assign SUB_inst = inst_sub;
@@ -264,6 +262,12 @@ module decode_mod(
     assign MFLO_inst = inst_mflo;
     assign MTHI_inst = inst_mthi;
     assign MTLO_inst = inst_mtlo;
+
+    //
+    assign R_type = inst_add | inst_addu | inst_sub | inst_subu | inst_or | inst_xor | inst_nor | inst_slt | inst_sltu | inst_sll | inst_srl | inst_sra | inst_sllv | inst_srlv |
+                    inst_srav | inst_jr  | inst_jalr;
+    assign I_type = inst_addi | inst_addiu | inst_andi | inst_ori | inst_xori | inst_lui | inst_lw | inst_sw | inst_beq | inst_bne | inst_slti | inst_sltiu;
+    assign J_type = inst_j | inst_jal;
 
     assign ALUControl = {
         ADDU_inst,
@@ -296,17 +300,11 @@ module decode_mod(
     assign shift_v = inst_sllv | inst_srlv | inst_srav;
     assign sext = inst_addi | inst_lw   | inst_sw   | inst_beq  | inst_bne | inst_slti | inst_sltiu |
                   inst_bgez | inst_bgtz | inst_blez | inst_bltz | inst_lb  | inst_lbu  | inst_sb; //1'b1 sign : 1'b0 zero
-    assign rd_en = inst_add  | inst_addu | inst_sub | inst_subu | inst_and | inst_or | inst_xor | inst_nor |
-                   inst_slt  | inst_sltu | inst_sll | inst_srl | inst_sra | inst_sllv | inst_srlv | inst_srav |
-                   inst_mfhi | inst_mflo | inst_jalr | inst_sw | inst_sb; //sw and sb are to shield rt as the destination register
-    assign rs_en = inst_addu | inst_subu | inst_slt | inst_sltu | inst_jalr | inst_jr | inst_and | inst_nor | inst_or |
-                   inst_xor | inst_sllv | inst_srav | inst_srlv | inst_addiu | inst_slti | inst_sltiu | inst_beq | inst_bgez |
-                   inst_bgtz | inst_blez | inst_bltz | inst_bne | inst_lw | inst_sw | inst_lb | inst_lbu | inst_sb | inst_andi |
-                   inst_ori | inst_xori;
-    assign rt_en = inst_addu | inst_subu | inst_slt | inst_sltu | inst_and | inst_nor | inst_or | inst_xor | inst_sll |
-                   inst_sllv | inst_sra | inst_srav | inst_srl | inst_srlv | inst_addiu | inst_slti | inst_sltiu | inst_lw |
-                   inst_sw | inst_lb | inst_lbu | inst_sb | inst_andi | inst_lui | inst_ori | inst_xori;
+    assign rd_or_rt = inst_add  | inst_addu | inst_sub | inst_subu | inst_and | inst_or | inst_xor | inst_nor |
+                      inst_slt  | inst_sltu | inst_sll | inst_srl | inst_sra | inst_sllv | inst_srlv | inst_srav |
+                      inst_mfhi | inst_mflo; //1'b1 rd : 1'b0 rt
     
+    assign rn = rd_or_rt ? inst[15:11] : inst[20:16];
 
     
     assign bpc = pc + {{14{inst[15]}}, inst[15:0], 2'b00}; //no delayslot
@@ -351,16 +349,12 @@ module decode(
     output wire [7:0] mem_control0,
     output wire shift_v0,
     output wire [31:0] imm0,
-    output wire [4:0] rd0,
+    output wire [4:0] rn0,
     output wire [31:0] bpc0,
     output wire [31:0] jpc0,
     output wire [4:0] rs0,
     output wire [4:0] rt0,
     output wire is_branch0,
-    output wire rd_en0,
-	output wire rt_en0,
-	output wire rs_en0,
-
 
     output wire write_mem1,
     output wire write_regfile1,
@@ -373,15 +367,12 @@ module decode(
     output wire [7:0] mem_control1,
     output wire shift_v1,
     output wire [31:0] imm1,
-    output wire [4:0] rd1,
+    output wire [4:0] rn1,
     output wire [31:0] bpc1,
     output wire [31:0] jpc1,
     output wire [4:0] rs1,
     output wire [4:0] rt1,
     output wire is_branch1,
-    output wire rd_en1,
-	output wire rt_en1,
-	output wire rs_en1,
 
     output wire write_mem2,
     output wire write_regfile2,
@@ -394,15 +385,12 @@ module decode(
     output wire [7:0] mem_control2,
     output wire shift_v2,
     output wire [31:0] imm2,
-    output wire [4:0] rd2,
+    output wire [4:0] rn2,
     output wire [31:0] bpc2,
     output wire [31:0] jpc2,
     output wire [4:0] rs2,
     output wire [4:0] rt2,
     output wire is_branch2,
-    output wire rd_en2,
-	output wire rt_en2,
-	output wire rs_en2,
 
     output wire write_mem3,
     output wire write_regfile3,
@@ -415,15 +403,12 @@ module decode(
     output wire [7:0] mem_control3,
     output wire shift_v3,
     output wire [31:0] imm3,
-    output wire [4:0] rd3,
+    output wire [4:0] rn3,
     output wire [31:0] bpc3,
     output wire [31:0] jpc3,
     output wire [4:0] rs3,
     output wire [4:0] rt3,
-    output wire is_branch3,
-    output wire rd_en3,
-	output wire rt_en3,
-	output wire rs_en3
+    output wire is_branch3
 );
 
     decode_mod m0(
@@ -441,15 +426,12 @@ module decode(
         .mem_control(mem_control0),
         .shift_v(shift_v0),
         .imm(imm0),
-        .rd(rd0),
+        .rn(rn0),
         .bpc(bpc0),
         .jpc(jpc0),
         .rs(rs0),
         .rt(rt0),
-        .is_branch(is_branch0),
-        .rd_en(rd_en0),
-        .rs_en(rs_en0),
-        .rt_en(rt_en0)
+        .is_branch(is_branch0)
     );
 
     decode_mod m1(
@@ -467,15 +449,12 @@ module decode(
         .mem_control(mem_control1),
         .shift_v(shift_v1),
         .imm(imm1),
-        .rd(rd1),
+        .rn(rn1),
         .bpc(bpc1),
         .jpc(jpc1),
         .rs(rs1),
         .rt(rt1),
-        .is_branch(is_branch1),
-        .rd_en(rd_en1),
-        .rs_en(rs_en1),
-        .rt_en(rt_en1)
+        .is_branch(is_branch1)
     );
 
     decode_mod m2(
@@ -493,15 +472,12 @@ module decode(
         .mem_control(mem_control2),
         .shift_v(shift_v2),
         .imm(imm2),
-        .rd(rd2),
+        .rn(rn2),
         .bpc(bpc2),
         .jpc(jpc2),
         .rs(rs2),
         .rt(rt2),
-        .is_branch(is_branch2),
-        .rd_en(rd_en2),
-        .rs_en(rs_en2),
-        .rt_en(rt_en2)
+        .is_branch(is_branch2)
     );
 
     decode_mod m3(
@@ -519,15 +495,12 @@ module decode(
         .mem_control(mem_control3),
         .shift_v(shift_v3),
         .imm(imm3),
-        .rd(rd3),
+        .rn(rn3),
         .bpc(bpc3),
         .jpc(jpc3),
         .rs(rs3),
         .rt(rt3),
-        .is_branch(is_branch3),
-        .rd_en(rd_en3),
-        .rs_en(rs_en3),
-        .rt_en(rt_en3)
+        .is_branch(is_branch3)
     );
 
 endmodule

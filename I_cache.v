@@ -3,75 +3,86 @@ module cache_fetch(
     input wire [255:0] cache_data,
     input wire [127:0] memory_data,
     input wire hit,
-    output reg [32:0] inst0,
-    output reg [32:0] inst1,
-    output reg [32:0] inst2,
-    output reg [32:0] inst3
+    output reg [31:0] inst0,
+    output reg [31:0] inst1,
+    output reg [31:0] inst2,
+    output reg [31:0] inst3,
+    output reg [2:0] inst_valid
 );
 
     always @(*) begin
         if(hit) begin
             case(offset)
                 5'b00000 : begin
-                    inst0 <= {1'b1, cache_data[255:224]};
-                    inst1 <= {1'b1, cache_data[223:192]};
-                    inst2 <= {1'b1, cache_data[191:160]};
-                    inst3 <= {1'b1, cache_data[159:128]};
+                    inst0 <= cache_data[255:224];
+                    inst1 <= cache_data[223:192];
+                    inst2 <= cache_data[191:160];
+                    inst3 <= cache_data[159:128];
+                    inst_valid <= 3'd4;
                 end
                 5'b00100 : begin
-                    inst0 <= {1'b1, cache_data[223:192]};
-                    inst1 <= {1'b1, cache_data[191:160]};
-                    inst2 <= {1'b1, cache_data[159:128]};
-                    inst3 <= {1'b1, cache_data[127:96]};
+                    inst0 <= cache_data[223:192];
+                    inst1 <= cache_data[191:160];
+                    inst2 <= cache_data[159:128];
+                    inst3 <= cache_data[127:96];
+                    inst_valid <= 3'd4;
                 end
                 5'b01000 : begin
-                    inst0 <= {1'b1, cache_data[191:160]};
-                    inst1 <= {1'b1, cache_data[159:128]};
-                    inst2 <= {1'b1, cache_data[127:96]};
-                    inst3 <= {1'b1, cache_data[95:64]};
+                    inst0 <= cache_data[191:160];
+                    inst1 <= cache_data[159:128];
+                    inst2 <= cache_data[127:96];
+                    inst3 <= cache_data[95:64];
+                    inst_valid <= 3'd4;
                 end
                 5'b01100 : begin
-                    inst0 <= {1'b1, cache_data[159:128]};
-                    inst1 <= {1'b1, cache_data[127:96]};
-                    inst2 <= {1'b1, cache_data[95:64]};
-                    inst3 <= {1'b1, cache_data[63:32]};
+                    inst0 <= cache_data[159:128];
+                    inst1 <= cache_data[127:96];
+                    inst2 <= cache_data[95:64];
+                    inst3 <= cache_data[63:32];
+                    inst_valid <= 3'd4;
                 end
                 5'b10000 : begin
-                    inst0 <= {1'b1, cache_data[127:96]};
-                    inst1 <= {1'b1, cache_data[95:64]};
-                    inst2 <= {1'b1, cache_data[63:32]};
-                    inst3 <= {1'b1, cache_data[31:0]};
+                    inst0 <= cache_data[127:96];
+                    inst1 <= cache_data[95:64];
+                    inst2 <= cache_data[63:32];
+                    inst3 <= cache_data[31:0];
+                    inst_valid <= 3'd4;
                 end
                 5'b10100 : begin
-                    inst0 <= {1'b1, cache_data[95:64]};
-                    inst1 <= {1'b1, cache_data[63:32]};
-                    inst2 <= {1'b1, cache_data[31:0]};
-                    inst3 <= 33'd0;
+                    inst0 <= cache_data[95:64];
+                    inst1 <= cache_data[63:32];
+                    inst2 <= cache_data[31:0];
+                    inst3 <= 32'd0;
+                    inst_valid <= 3'd3;
                 end
                 5'b11000 : begin
-                    inst0 <= {1'b1, cache_data[63:32]};
-                    inst1 <= {1'b1, cache_data[31:0]};
-                    inst2 <= 33'd0;
-                    inst3 <= 33'd0;
+                    inst0 <= cache_data[63:32];
+                    inst1 <= cache_data[31:0];
+                    inst2 <= 32'd0;
+                    inst3 <= 32'd0;
+                    inst_valid <= 3'd2;
                 end
                 5'b11000 : begin
-                    inst0 <= {1'b1, cache_data[31:0]};
-                    inst1 <= 33'd0;
-                    inst2 <= 33'd0;
-                    inst3 <= 33'd0;
+                    inst0 <= cache_data[31:0];
+                    inst1 <= 32'd0;
+                    inst2 <= 32'd0;
+                    inst3 <= 32'd0;
+                    inst_valid <= 3'd1;
                 end
                 default : begin
-                    inst0 <= 33'd0;
-                    inst1 <= 33'd0;
-                    inst2 <= 33'd0;
-                    inst3 <= 33'd0;
+                    inst0 <= 32'd0;
+                    inst1 <= 32'd0;
+                    inst2 <= 32'd0;
+                    inst3 <= 32'd0;
+                    inst_valid <= 3'd0;
                 end
             endcase
         end else begin
-            inst0 <= {1'b1, memory_data[127:96]};
-            inst1 <= {1'b1, memory_data[95:64]};
-            inst2 <= {1'b1, memory_data[63:32]};
-            inst3 <= {1'b1, memory_data[31:0]};
+            inst0 <= memory_data[127:96];
+            inst1 <= memory_data[95:64];
+            inst2 <= memory_data[63:32];
+            inst3 <= memory_data[31:0];
+            inst_valid <= 3'd4;
         end
     end
 
@@ -82,10 +93,11 @@ module I_cache(
     input wire resetn,
     input wire lookup_request,
     input wire [31:0] pc,
-    output wire [32:0] inst0,
-    output wire [32:0] inst1,
-    output wire [32:0] inst2,
-    output wire [32:0] inst3,
+    output wire [31:0] inst0,
+    output wire [31:0] inst1,
+    output wire [31:0] inst2,
+    output wire [31:0] inst3,
+    output wire [2:0] inst_valid,
     //
     input wire [255:0] memory_data,
     input wire addr_ok, //slave is ready to receive addr
@@ -229,7 +241,8 @@ module I_cache(
         .inst0(inst0),
         .inst1(inst1),
         .inst2(inst2),
-        .inst3(inst3)
+        .inst3(inst3),
+        .inst_valid(inst_valid)
     );
 
 endmodule
