@@ -58,9 +58,9 @@ module issue_queue(
 					   
 	assign IQ_s0 = out_en[0] ? (out_en[1] ? (2'b10) : (2'b01)) : (2'b00);
 	assign IQ_s1 = out_en[0] ? (out_en[1] ? (2'b10) : (2'b01)) : (out_en[1] ? (out_en[2] ? (2'b10) : (2'b01)) : (2'b00));
-	assign IQ_s2 = (out_en[0] | out_en[1]) ? (out_two_2 ? (2'b10) : ()) : (out_en[2] ? (out_en[3] ? (2'b10) : (2'b01)) : (2'b00));
-	assign IQ_s3 = 
-	assign IQ_s4 = 
+	assign IQ_s2 = (out_en[0] | out_en[1]) ? (out_two_2 ? (2'b10) : (2'b01)) : (out_en[2] ? (out_en[3] ? (2'b10) : (2'b01)) : (2'b00));
+	assign IQ_s3 = (out_en[0] | out_en[1] | out_en[2]) ? (out_two_3 ? (2'b10) : (2'b01)) : (out_en[3] ? (out_en[4] ? (2'b10) : (2'b01)) : (2'b00));
+	assign IQ_s4 = (out_en[0] | out_en[1] | out_en[2] | out_en[3]) ? (out_two_4 ? (2'b10) : (2'b01)) : (out_en[4] ? (out_en[5] ? (2'b10) : (2'b01)) : (2'b00));
 	assign IQ_s5 = 
 	assign IQ_s6 = 
 	
