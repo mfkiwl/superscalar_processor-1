@@ -174,7 +174,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= din0;
@@ -184,7 +184,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							3'd3 : begin
 								ISSUE_QUEUE[3'd0] <= din0;
@@ -194,7 +194,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd3 - out_count;
+								count <= count + 3'd3 - {1'b0, out_count};
 							end
 							3'd4 : begin
 								ISSUE_QUEUE[3'd0] <= din0;
@@ -204,7 +204,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd4 - out_count;
+								count <= count + 3'd4 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -228,7 +228,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -238,7 +238,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							3'd3 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -248,7 +248,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd3 - out_count;
+								count <= count + 3'd3 - {1'b0, out_count};
 							end
 							3'd4 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -258,7 +258,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din3;
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd4 - out_count;
+								count <= count + 3'd4 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -282,7 +282,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -292,7 +292,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							3'd3 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -302,7 +302,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din2;
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd3 - out_count;
+								count <= count + 3'd3 - {1'b0, out_count};
 							end
 							3'd4 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -312,7 +312,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din2;
 								ISSUE_QUEUE[3'd5] <= din3;
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd4 - out_count;
+								count <= count + 3'd4 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -336,7 +336,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= ISSUE_QUEUE[3'd4];
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -346,7 +346,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din1;
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							3'd3 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -356,7 +356,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din1;
 								ISSUE_QUEUE[3'd5] <= din2;
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd3 - out_count;
+								count <= count + 3'd3 - {1'b0, out_count};
 							end
 							3'd4 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -366,7 +366,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din1;
 								ISSUE_QUEUE[3'd5] <= din2;
 								ISSUE_QUEUE[3'd6] <= din3;
-								count <= count + 3'd4 - out_count;
+								count <= count + 3'd4 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -390,7 +390,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din0;
 								ISSUE_QUEUE[3'd5] <= ISSUE_QUEUE[3'd5];
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -400,7 +400,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din0;
 								ISSUE_QUEUE[3'd5] <= din1;
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							3'd3 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -410,7 +410,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= din0;
 								ISSUE_QUEUE[3'd5] <= din1;
 								ISSUE_QUEUE[3'd6] <= din2;
-								count <= count + 3'd3 - out_count;
+								count <= count + 3'd3 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -434,7 +434,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= IQ_update4;
 								ISSUE_QUEUE[3'd5] <= din0;
 								ISSUE_QUEUE[3'd6] <= ISSUE_QUEUE[3'd6];
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							3'd2 : begin
 								ISSUE_QUEUE[3'd0] <= IQ_update0;
@@ -444,7 +444,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= IQ_update4;
 								ISSUE_QUEUE[3'd5] <= din0;
 								ISSUE_QUEUE[3'd6] <= din1;
-								count <= count + 3'd2 - out_count;
+								count <= count + 3'd2 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -468,7 +468,7 @@ module issue_queue_two(
 								ISSUE_QUEUE[3'd4] <= IQ_update4;
 								ISSUE_QUEUE[3'd5] <= IQ_update5;
 								ISSUE_QUEUE[3'd6] <= din0;
-								count <= count + 3'd1 - out_count;
+								count <= count + 3'd1 - {1'b0, out_count};
 							end
 							default : begin
 								ISSUE_QUEUE[3'd0] <= ISSUE_QUEUE[3'd0];
@@ -501,7 +501,7 @@ module issue_queue_two(
 				ISSUE_QUEUE[3'd4] <= IQ_update4;
 				ISSUE_QUEUE[3'd5] <= IQ_update5;
 				ISSUE_QUEUE[3'd6] <= IQ_update6;
-				count <= count - out_count;
+				count <= count - {1'b0, out_count};
 			end
 		end
 	end
