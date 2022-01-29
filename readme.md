@@ -312,3 +312,17 @@
 2. 修复今日发现的bug
 3. 将模块`issue_queue`更名为`issue_queue_two`
 4. 增加模块`issue_queue_one`，功能为压缩一个表项的发射队列
+
+
+
+### 2022.1.27
+
+---
+
+1. 继续开发发射队列
+2. 将模块`issue_queue_two`更名为`issue_queue_ALU`
+3. 修改模块`issue_queue_ALU`中的发射队列的宽度，为5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 32 bits imm, 15 bits ALUControl, 1 bit Issued，共68 bits
+
+**问题**
+
+- [ ] 需要对译码模块进行修改，根据发射队列修改单周期延迟指令的输出信号

@@ -23,14 +23,15 @@ module mux4x32(
     
 endmodule
 
-////////////////////////////////////////////////////////////////////////////////////////////////////module issue_queue_two can compressing two entry at once
-module issue_queue_two(
+////////////////////////////////////////////////////////////////////////////////////////////////////compressing two entry at once with single cycle delay
+//**5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 32 bits imm, 15 bits ALUControl, 1 bit Issued**
+module issue_queue_ALU(
 	input wire clk,
 	input wire resetn,
-	input wire [31:0] din0,
-	input wire [31:0] din1,
-	input wire [31:0] din2,
-	input wire [31:0] din3,
+	input wire [67:0] din0,
+	input wire [67:0] din1,
+	input wire [67:0] din2,
+	input wire [67:0] din3,
 	input wire [2:0] write_num,
 	input wire write_en,
 	input wire [6:0] out_en, //corresponding bit will be enabled
@@ -39,21 +40,26 @@ module issue_queue_two(
 	input wire out_en0,
 	input wire out_en1,
 	
-	output wire [31:0] dout0,
-	output wire [31:0] dout1,
+	output wire [67:0] dout0,
+	output wire [67:0] dout1,
+	output wire [67:0] dout2,
+	output wire [67:0] dout3,
+	output wire [67:0] dout4,
+	output wire [67:0] dout5,
+	output wire [67:0] dout6,
 	output reg  [2:0] count,
 	output wire write_success //return the writing result
 );
 
-	reg [31:0] ISSUE_QUEUE [0:6];
+	reg [67:0] ISSUE_QUEUE [0:6];
 	
-	wire [31:0] IQ_update0;
-	wire [31:0] IQ_update1;
-	wire [31:0] IQ_update2;
-	wire [31:0] IQ_update3;
-	wire [31:0] IQ_update4;
-	wire [31:0] IQ_update5;
-	wire [31:0] IQ_update6;
+	wire [67:0] IQ_update0;
+	wire [67:0] IQ_update1;
+	wire [67:0] IQ_update2;
+	wire [67:0] IQ_update3;
+	wire [67:0] IQ_update4;
+	wire [67:0] IQ_update5;
+	wire [67:0] IQ_update6;
 	wire [1:0]  IQ_s0;
 	wire [1:0]  IQ_s1;
 	wire [1:0]  IQ_s2;
@@ -75,8 +81,13 @@ module issue_queue_two(
 	assign w_ptr = (count - {1'b0, out_count} < 0) ? (3'd0) : (count - {1'b0, out_count});
 	assign write_success = (w_ptr + write_num > 4'd6) ? (1'b0) : (1'b1);
 	
-	assign dout0 = out_en0 ? ISSUE_QUEUE[out_num0] : 32'd0;
-	assign dout1 = out_en1 ? ISSUE_QUEUE[out_num1] : 32'd0;
+	assign dout0 = ISSUE_QUEUE[3'd0];
+	assign dout1 = ISSUE_QUEUE[3'd1];
+	assign dout2 = ISSUE_QUEUE[3'd2];
+	assign dout3 = ISSUE_QUEUE[3'd3];
+	assign dout4 = ISSUE_QUEUE[3'd4];
+	assign dout5 = ISSUE_QUEUE[3'd5];
+	assign dout6 = ISSUE_QUEUE[3'd6];
 	
 	assign out_two_2 = out_en[0] & out_en[1];
 	assign out_two_3 = (out_en[0] & out_en[1]) | (out_en[0] & out_en[2]) | (out_en[1] & out_en[2]);
@@ -97,7 +108,7 @@ module issue_queue_two(
 		.a0(ISSUE_QUEUE[3'd0]),
 		.a1(ISSUE_QUEUE[3'd1]),
 		.a2(ISSUE_QUEUE[3'd2]),
-		.a3(32'd0),
+		.a3(68'd0),
 		.out(IQ_update0)
 	);
 	
@@ -106,7 +117,7 @@ module issue_queue_two(
 		.a0(ISSUE_QUEUE[3'd1]),
 		.a1(ISSUE_QUEUE[3'd2]),
 		.a2(ISSUE_QUEUE[3'd3]),
-		.a3(32'd0),
+		.a3(68'd0),
 		.out(IQ_update1)
 	);
 	
@@ -115,7 +126,7 @@ module issue_queue_two(
 		.a0(ISSUE_QUEUE[3'd2]),
 		.a1(ISSUE_QUEUE[3'd3]),
 		.a2(ISSUE_QUEUE[3'd4]),
-		.a3(32'd0),
+		.a3(68'd0),
 		.out(IQ_update2)
 	);
 	
@@ -124,7 +135,7 @@ module issue_queue_two(
 		.a0(ISSUE_QUEUE[3'd3]),
 		.a1(ISSUE_QUEUE[3'd4]),
 		.a2(ISSUE_QUEUE[3'd5]),
-		.a3(32'd0),
+		.a3(68'd0),
 		.out(IQ_update3)
 	);
 	
@@ -133,7 +144,7 @@ module issue_queue_two(
 		.a0(ISSUE_QUEUE[3'd4]),
 		.a1(ISSUE_QUEUE[3'd5]),
 		.a2(ISSUE_QUEUE[3'd6]),
-		.a3(32'd0),
+		.a3(68'd0),
 		.out(IQ_update4)
 	);
 	
@@ -141,15 +152,15 @@ module issue_queue_two(
 		.s(IQ_s5),
 		.a0(ISSUE_QUEUE[3'd5]),
 		.a1(ISSUE_QUEUE[3'd6]),
-		.a2(32'd0),
-		.a3(32'd0),
+		.a2(68'd0),
+		.a3(68'd0),
 		.out(IQ_update5)
 	);
 	
 	mux2x32 mux6(
 		.s(IQ_s6),
 		.a0(ISSUE_QUEUE[3'd6]),
-		.a1(32'd0),
+		.a1(68'd0),
 		.out(IQ_update6)
 	);
 	
@@ -157,7 +168,7 @@ module issue_queue_two(
 		if(~resetn) begin : initialize
 			integer i;
 			for(i = 0;i <= 6;i = i + 1) begin : loop
-				ISSUE_QUEUE[i] <= 32'd0;
+				ISSUE_QUEUE[i] <= 68'd0;
 			end
 
 			count <= 3'd0;
@@ -521,7 +532,13 @@ module issue_queue_one(
 	input wire [2:0] out_num,
 	input wire out_en,
 	
-	output wire [31:0] dout,
+	output wire [31:0] dout0,
+	output wire [31:0] dout1,
+	output wire [31:0] dout2,
+	output wire [31:0] dout3,
+	output wire [31:0] dout4,
+	output wire [31:0] dout5,
+	output wire [31:0] dout6,
 	output reg  [2:0] count,
 	output wire write_success //return the writing result
 );
@@ -547,7 +564,14 @@ module issue_queue_one(
 	
 	assign w_ptr = (count - {2'b00, out_en} < 0) ? (3'd0) : (count - {2'b00, out_en});
 	assign write_success = (w_ptr + write_num > 4'd6) ? (1'b0) : (1'b1);
-	assign dout = out_en ? ISSUE_QUEUE[out_num] : 32'd0;
+	
+	assign dout0 = ISSUE_QUEUE[3'd0];
+	assign dout1 = ISSUE_QUEUE[3'd1];
+	assign dout2 = ISSUE_QUEUE[3'd2];
+	assign dout3 = ISSUE_QUEUE[3'd3];
+	assign dout4 = ISSUE_QUEUE[3'd4];
+	assign dout5 = ISSUE_QUEUE[3'd5];
+	assign dout6 = ISSUE_QUEUE[3'd6];
 					   
 	assign IQ_s0 = ((out_en == 3'd0) & out_en) ? (1'b1) : (1'b0);
 	assign IQ_s1 = ((out_en <= 3'd1) & out_en) ? (1'b1) : (1'b0);
@@ -959,4 +983,10 @@ module issue_queue_one(
 		end
 	end
 
+endmodule
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+module One_M_Select(
+	
+);
 endmodule
