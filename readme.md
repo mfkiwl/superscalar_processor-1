@@ -321,8 +321,18 @@
 
 1. 继续开发发射队列
 2. 将模块`issue_queue_two`更名为`issue_queue_ALU`
-3. 修改模块`issue_queue_ALU`中的发射队列的宽度，为5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 32 bits imm, 15 bits ALUControl, 1 bit Issued，共68 bits
+3. 修改模块`issue_queue_ALU`中的发射队列的宽度为, 5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 1 bit Issued，共21 bits
 
 **问题**
 
 - [ ] 需要对译码模块进行修改，根据发射队列修改单周期延迟指令的输出信号
+
+
+
+### 2022.2.10
+
+---
+
+1. 继续开发发射队列
+2. 复制模块`issue_queue_one`并更名为`issue_queue_MUL_DIV`用于乘法和除法FU
+3. `issue_queue_MUL_DIV`发射队列宽度为, 1 bit Issued, 5 bits SrcL, 1 bit SrcL_M, 34 bits SrcL_SHIFT, 5 bits SrcR, 1 bit SrcR_M, 34 bits SrcR_SHIFT, 1 bit SrcR_imm_valid, 5 bits Dest, 34 bits delay，共121 bits
