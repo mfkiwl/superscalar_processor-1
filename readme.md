@@ -336,3 +336,21 @@
 1. 继续开发发射队列
 2. 复制模块`issue_queue_one`并更名为`issue_queue_MUL_DIV`用于乘法和除法FU
 3. `issue_queue_MUL_DIV`发射队列宽度为, 1 bit Issued, 5 bits SrcL, 1 bit SrcL_M, 34 bits SrcL_SHIFT, 5 bits SrcR, 1 bit SrcR_M, 34 bits SrcR_SHIFT, 1 bit SrcR_imm_valid, 5 bits Dest, 34 bits delay，共121 bits
+
+
+
+### 2022.2.11
+
+---
+
+1. 继续开发发射队列
+2. `issue_queue_Load_Store`发射队列宽度为, 5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 1 bit Issued，共21 bits
+
+
+
+### 2022.2.12
+
+---
+
+1. 继续开发发射队列
+2. 完成1 to M仲裁及2 to M仲裁并经过测试

@@ -47,6 +47,7 @@ module issue_queue_ALU(
 	output wire [20:0] dout4,
 	output wire [20:0] dout5,
 	output wire [20:0] dout6,
+	output wire [6:0] rdy,
 	output reg  [2:0] count,
 	output wire write_success //return the writing result
 );
@@ -88,6 +89,14 @@ module issue_queue_ALU(
 	assign dout4 = ISSUE_QUEUE[3'd4];
 	assign dout5 = ISSUE_QUEUE[3'd5];
 	assign dout6 = ISSUE_QUEUE[3'd6];
+	
+	assign rdy = {dout6[7] & dout6[14],
+				  dout5[7] & dout5[14],
+				  dout4[7] & dout4[14],
+				  dout3[7] & dout3[14],
+				  dout2[7] & dout2[14],
+				  dout1[7] & dout1[14],
+				  dout0[7] & dout0[14]};
 	
 	assign out_two_2 = out_en[0] & out_en[1];
 	assign out_two_3 = (out_en[0] & out_en[1]) | (out_en[0] & out_en[2]) | (out_en[1] & out_en[2]);
@@ -520,38 +529,38 @@ module issue_queue_ALU(
 endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////module issue_queue_one can compressing one entry at once
-module issue_queue_one(
+module issue_queue_Load_Store(
 	input wire clk,
 	input wire resetn,
-	input wire [31:0] din0,
-	input wire [31:0] din1,
-	input wire [31:0] din2,
-	input wire [31:0] din3,
+	input wire [20:0] din0,
+	input wire [20:0] din1,
+	input wire [20:0] din2,
+	input wire [20:0] din3,
 	input wire [2:0] write_num,
 	input wire write_en,
 	input wire [2:0] out_num,
 	input wire out_en,
 	
-	output wire [31:0] dout0,
-	output wire [31:0] dout1,
-	output wire [31:0] dout2,
-	output wire [31:0] dout3,
-	output wire [31:0] dout4,
-	output wire [31:0] dout5,
-	output wire [31:0] dout6,
+	output wire [20:0] dout0,
+	output wire [20:0] dout1,
+	output wire [20:0] dout2,
+	output wire [20:0] dout3,
+	output wire [20:0] dout4,
+	output wire [20:0] dout5,
+	output wire [20:0] dout6,
 	output reg  [2:0] count,
 	output wire write_success //return the writing result
 );
 
-	reg [31:0] ISSUE_QUEUE [0:6];
+	reg [20:0] ISSUE_QUEUE [0:6];
 	
-	wire [31:0] IQ_update0;
-	wire [31:0] IQ_update1;
-	wire [31:0] IQ_update2;
-	wire [31:0] IQ_update3;
-	wire [31:0] IQ_update4;
-	wire [31:0] IQ_update5;
-	wire [31:0] IQ_update6;
+	wire [20:0] IQ_update0;
+	wire [20:0] IQ_update1;
+	wire [20:0] IQ_update2;
+	wire [20:0] IQ_update3;
+	wire [20:0] IQ_update4;
+	wire [20:0] IQ_update5;
+	wire [20:0] IQ_update6;
 	wire IQ_s0;
 	wire IQ_s1;
 	wire IQ_s2;
@@ -626,7 +635,7 @@ module issue_queue_one(
 	mux2x32 mux6(
 		.s(IQ_s6),
 		.a0(ISSUE_QUEUE[3'd6]),
-		.a1(32'd0),
+		.a1(21'd0),
 		.out(IQ_update6)
 	);
 	
@@ -634,7 +643,7 @@ module issue_queue_one(
 		if(~resetn) begin : initialize
 			integer i;
 			for(i = 0;i <= 6;i = i + 1) begin : loop
-				ISSUE_QUEUE[i] <= 32'd0;
+				ISSUE_QUEUE[i] <= 21'd0;
 			end
 
 			count <= 3'd0;
@@ -1453,6 +1462,167 @@ endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 module One_M_Select(
-	
+	input wire [6:0] rdy,
+	output reg [2:0] num,
+	output reg en
 );
+
+	always@(*) begin
+		if(rdy[0] == 1'b1) begin
+			num <= 3'd0;
+			en  <= 1'b1;
+		end else if(rdy[1] == 1'b1) begin
+			num <= 3'd1;
+			en  <= 1'b1;
+		end else if(rdy[2] == 1'b1) begin
+			num <= 3'd2;
+			en  <= 1'b1;
+		end else if(rdy[3] == 1'b1) begin
+			num <= 3'd3;
+			en  <= 1'b1;
+		end else if(rdy[4] == 1'b1) begin
+			num <= 3'd4;
+			en  <= 1'b1;
+		end else if(rdy[5] == 1'b1) begin
+			num <= 3'd5;
+			en  <= 1'b1;
+		end else if(rdy[6] == 1'b1) begin
+			num <= 3'd6;
+			en  <= 1'b1;
+		end else begin
+			num <= 3'd7;
+			en  <= 1'b0;
+		end
+	end
+	
+endmodule
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+module Two_M_Select(
+	input wire [6:0] rdy,
+	output reg [2:0] num0,
+	output reg [2:0] num1,
+	output reg en0,
+	output reg en1
+);
+
+	always@(*) begin
+		if(rdy[0] == 1'b1) begin
+			num0 <= 3'd0;
+			en0  <= 1'b1;
+			if(rdy[1] == 1'b1) begin
+				num1 <= 3'd1;
+				en1  <= 1'b1;
+			end else if(rdy[2] == 1'b1) begin
+				num1 <= 3'd2;
+				en1  <= 1'b1;
+			end else if(rdy[3] == 1'b1) begin
+				num1 <= 3'd3;
+				en1  <= 1'b1;
+			end else if(rdy[4] == 1'b1) begin
+				num1 <= 3'd4;
+				en1  <= 1'b1;
+			end else if(rdy[5] == 1'b1) begin
+				num1 <= 3'd5;
+				en1  <= 1'b1;
+			end else if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[1] == 1'b1) begin
+			num0 <= 3'd1;
+			en0  <= 1'b1;
+			if(rdy[2] == 1'b1) begin
+				num1 <= 3'd2;
+				en1  <= 1'b1;
+			end else if(rdy[3] == 1'b1) begin
+				num1 <= 3'd3;
+				en1  <= 1'b1;
+			end else if(rdy[4] == 1'b1) begin
+				num1 <= 3'd4;
+				en1  <= 1'b1;
+			end else if(rdy[5] == 1'b1) begin
+				num1 <= 3'd5;
+				en1  <= 1'b1;
+			end else if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[2] == 1'b1) begin
+			num0 <= 3'd2;
+			en0  <= 1'b1;
+			if(rdy[3] == 1'b1) begin
+				num1 <= 3'd3;
+				en1  <= 1'b1;
+			end else if(rdy[4] == 1'b1) begin
+				num1 <= 3'd4;
+				en1  <= 1'b1;
+			end else if(rdy[5] == 1'b1) begin
+				num1 <= 3'd5;
+				en1  <= 1'b1;
+			end else if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[3] == 1'b1) begin
+			num0 <= 3'd3;
+			en0  <= 1'b1;
+			if(rdy[4] == 1'b1) begin
+				num1 <= 3'd4;
+				en1  <= 1'b1;
+			end else if(rdy[5] == 1'b1) begin
+				num1 <= 3'd5;
+				en1  <= 1'b1;
+			end else if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[4] == 1'b1) begin
+			num0 <= 3'd4;
+			en0  <= 1'b1;
+			if(rdy[5] == 1'b1) begin
+				num1 <= 3'd5;
+				en1  <= 1'b1;
+			end else if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[5] == 1'b1) begin
+			num0 <= 3'd5;
+			en0  <= 1'b1;
+			if(rdy[6] == 1'b1) begin
+				num1 <= 3'd6;
+				en1  <= 1'b1;
+			end else begin
+				num1 <= 3'd7;
+				en1  <= 1'b0;
+			end
+		end else if(rdy[6] == 1'b1) begin
+			num0 <= 3'd6;
+			en0  <= 1'b1;
+			num1 <= 3'd7;
+			en1  <= 1'b0;
+		end else begin
+			num0 <= 3'd7;
+			en0  <= 1'b0;
+			num1 <= 3'd7;
+			en1  <= 1'b0;
+		end
+	end
+
 endmodule
