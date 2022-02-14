@@ -33,22 +33,26 @@ module select(
     output wire [2:0] IQ_MD_select_num,
     output wire IQ_MD_select_en,
 
-    output wire [4:0] wakeup_reg_ALU0,
-	output wire [4:0] wakeup_reg_ALU1,
+    output reg [4:0] wakeup_reg_ALU0,
+	output reg [4:0] wakeup_reg_ALU1,
 	output wire wakeup_ALU_en0,
 	output wire wakeup_ALU_en1,
 	output wire [6:0] wakeup_ALU_en,
 
-	output wire [4:0] wakeup_reg_MD,
+	output reg [4:0] wakeup_reg_MD,
 	output wire wakeup_MD_en,
 
-	output wire [4:0] wakeup_reg_LS,
+	output reg [4:0] wakeup_reg_LS,
 	output wire wakeup_LS_en
 );
 
 	wire [6:0] rdy_MD;
 	wire [6:0] rdy_LS;
 	wire [6:0] rdy_ALU;
+
+	wire [6:0] issued_MD;
+	wire [6:0] issued_LS;
+	wire [6:0] issued_ALU;
 
 	wire [2:0] select_num_MD;
 	wire [2:0] select_num_LS;
@@ -91,14 +95,46 @@ module select(
 		IQ_ALU_dout0[14] & IQ_ALU_dout0[7]
 	};
 
+	assign issued_MD = {
+		IQ_MD_dout6[120],
+		IQ_MD_dout5[120],
+		IQ_MD_dout4[120],
+		IQ_MD_dout3[120],
+		IQ_MD_dout2[120],
+		IQ_MD_dout1[120],
+		IQ_MD_dout0[120]
+	};
+
+	assign issued_LS = {
+		IQ_LS_dout6[0],
+		IQ_LS_dout5[0],
+		IQ_LS_dout4[0],
+		IQ_LS_dout3[0],
+		IQ_LS_dout2[0],
+		IQ_LS_dout1[0],
+		IQ_LS_dout0[0]
+	};
+
+	assign issued_ALU = {
+		IQ_ALU_dout6[0],
+		IQ_ALU_dout5[0],
+		IQ_ALU_dout4[0],
+		IQ_ALU_dout3[0],
+		IQ_ALU_dout2[0],
+		IQ_ALU_dout1[0],
+		IQ_ALU_dout0[0]
+	};
+
 	One_M_Select Select_MD(
 		.rdy(rdy_MD),
+		.issued(issued_MD),
 		.num(select_num_MD),
 		.en(select_en_MD)
 	);
 
 	One_M_Select Select_LS(
 		.rdy(rdy_LS),
+		.issued(issued_LS),
 		.num(select_num_LS),
 		.en(select_en_LS)
 	);
@@ -112,36 +148,149 @@ module select(
 		.en1(select_en1_ALU)
 	);
 
+	always @(*) begin
+		case(select_num_MD)
+			3'd0 : begin
+				wakeup_reg_MD <= IQ_MD_dout0[38:34];
+			end
+			3'd1 : begin
+				wakeup_reg_MD <= IQ_MD_dout1[38:34];
+			end
+			3'd2 : begin
+				wakeup_reg_MD <= IQ_MD_dout2[38:34];
+			end
+			3'd3 : begin
+				wakeup_reg_MD <= IQ_MD_dout3[38:34];
+			end
+			3'd4 : begin
+				wakeup_reg_MD <= IQ_MD_dout4[38:34];
+			end
+			3'd5 : begin
+				wakeup_reg_MD <= IQ_MD_dout5[38:34];
+			end
+			3'd6 : begin
+				wakeup_reg_MD <= IQ_MD_dout6[38:34];
+			end
+			default : begin
+				wakeup_reg_MD <= 5'd0;
+			end
+		endcase
+	end
+
+	always @(*) begin
+		case(select_num_LS)
+			3'd0 : begin
+				wakeup_reg_LS <= IQ_LS_dout0[6:2];
+			end
+			3'd1 : begin
+				wakeup_reg_LS <= IQ_LS_dout1[6:2];
+			end
+			3'd2 : begin
+				wakeup_reg_LS <= IQ_LS_dout2[6:2];
+			end
+			3'd3 : begin
+				wakeup_reg_LS <= IQ_LS_dout3[6:2];
+			end
+			3'd4 : begin
+				wakeup_reg_LS <= IQ_LS_dout4[6:2];
+			end
+			3'd5 : begin
+				wakeup_reg_LS <= IQ_LS_dout5[6:2];
+			end
+			3'd6 : begin
+				wakeup_reg_LS <= IQ_LS_dout6[6:2];
+			end
+			default : begin
+				wakeup_reg_LS <= 5'd0;
+			end
+		endcase
+	end
+
+	always @(*) begin
+		case(select_num_ALU0)
+			3'd0 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout0[6:2];
+			end
+			3'd1 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout1[6:2];
+			end
+			3'd2 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout2[6:2];
+			end
+			3'd3 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout3[6:2];
+			end
+			3'd4 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout4[6:2];
+			end
+			3'd5 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout5[6:2];
+			end
+			3'd6 : begin
+				wakeup_reg_ALU0 <= IQ_ALU_dout6[6:2];
+			end
+			default : begin
+				wakeup_reg_ALU0 <= 5'd0;
+			end
+		endcase
+		case(select_num_ALU1)
+			3'd0 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout0[6:2];
+			end
+			3'd1 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout1[6:2];
+			end
+			3'd2 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout2[6:2];
+			end
+			3'd3 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout3[6:2];
+			end
+			3'd4 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout4[6:2];
+			end
+			3'd5 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout5[6:2];
+			end
+			3'd6 : begin
+				wakeup_reg_ALU1 <= IQ_ALU_dout6[6:2];
+			end
+			default : begin
+				wakeup_reg_ALU1 <= 5'd0;
+			end
+		endcase
+	end
 
 endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 module One_M_Select(
 	input wire [6:0] rdy,
+	input wire [6:0] issued,
 	output reg [2:0] num,
 	output reg en
 );
 
 	always@(*) begin
-		if(rdy[0] == 1'b1) begin
+		if(rdy[0] == 1'b1 && issued[0] != 1'b1) begin
 			num <= 3'd0;
 			en  <= 1'b1;
-		end else if(rdy[1] == 1'b1) begin
+		end else if(rdy[1] == 1'b1 && issued[1] != 1'b1) begin
 			num <= 3'd1;
 			en  <= 1'b1;
-		end else if(rdy[2] == 1'b1) begin
+		end else if(rdy[2] == 1'b1 && issued[2] != 1'b1) begin
 			num <= 3'd2;
 			en  <= 1'b1;
-		end else if(rdy[3] == 1'b1) begin
+		end else if(rdy[3] == 1'b1 && issued[3] != 1'b1) begin
 			num <= 3'd3;
 			en  <= 1'b1;
-		end else if(rdy[4] == 1'b1) begin
+		end else if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 			num <= 3'd4;
 			en  <= 1'b1;
-		end else if(rdy[5] == 1'b1) begin
+		end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 			num <= 3'd5;
 			en  <= 1'b1;
-		end else if(rdy[6] == 1'b1) begin
+		end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 			num <= 3'd6;
 			en  <= 1'b1;
 		end else begin
