@@ -33,17 +33,29 @@ module select(
     output wire [2:0] IQ_MD_select_num,
     output wire IQ_MD_select_en,
 
-    output reg [4:0] wakeup_reg_ALU0,
-	output reg [4:0] wakeup_reg_ALU1,
-	output wire wakeup_ALU_en0,
-	output wire wakeup_ALU_en1,
-	output wire [6:0] wakeup_ALU_en,
+	output wire [1:0] IQ_ALU_wakeup0,
+	output wire [1:0] IQ_ALU_wakeup1,
+	output wire [1:0] IQ_ALU_wakeup2,
+	output wire [1:0] IQ_ALU_wakeup3,
+	output wire [1:0] IQ_ALU_wakeup4,
+	output wire [1:0] IQ_ALU_wakeup5,
+	output wire [1:0] IQ_ALU_wakeup6,
 
-	output reg [4:0] wakeup_reg_MD,
-	output wire wakeup_MD_en,
+	output wire [1:0] IQ_LS_wakeup0,
+	output wire [1:0] IQ_LS_wakeup1,
+	output wire [1:0] IQ_LS_wakeup2,
+	output wire [1:0] IQ_LS_wakeup3,
+	output wire [1:0] IQ_LS_wakeup4,
+	output wire [1:0] IQ_LS_wakeup5,
+	output wire [1:0] IQ_LS_wakeup6,
 
-	output reg [4:0] wakeup_reg_LS,
-	output wire wakeup_LS_en
+	output wire [1:0] IQ_MD_wakeup0,
+	output wire [1:0] IQ_MD_wakeup1,
+	output wire [1:0] IQ_MD_wakeup2,
+	output wire [1:0] IQ_MD_wakeup3,
+	output wire [1:0] IQ_MD_wakeup4,
+	output wire [1:0] IQ_MD_wakeup5,
+	output wire [1:0] IQ_MD_wakeup6
 );
 
 	wire [6:0] rdy_MD;
@@ -64,6 +76,17 @@ module select(
 	wire select_en0_ALU;
 	wire select_en1_ALU;
 	wire [6:0] select_en_ALU;
+
+	reg [4:0] wakeup_reg_ALU0;
+	reg [4:0] wakeup_reg_ALU1;
+	reg [4:0] wakeup_reg_MD;
+	reg [4:0] wakeup_reg_LS;
+
+	wire wakeup_ALU_en0;
+	wire wakeup_ALU_en1;
+	wire [6:0] wakeup_ALU_en;
+	wire wakeup_MD_en;
+	wire wakeup_LS_en;
 
 	assign rdy_LS = {
 		IQ_MD_dout6[114] & IQ_MD_dout6[75],
@@ -125,6 +148,8 @@ module select(
 		IQ_ALU_dout0[0]
 	};
 
+	assign IQ_ALU_wakeup0 = {};
+
 	One_M_Select Select_MD(
 		.rdy(rdy_MD),
 		.issued(issued_MD),
@@ -141,6 +166,7 @@ module select(
 
 	Two_M_Select Select_ALU(
 		.rdy(rdy_ALU),
+		.issued(issued_ALU),
 		.num0(select_num_ALU0),
 		.num1(select_num_ALU1),
 		.en(select_en_ALU),
@@ -304,6 +330,7 @@ endmodule
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 module Two_M_Select(
 	input wire [6:0] rdy,
+	input wire [6:0] issued,
 	output reg [2:0] num0,
 	output reg [2:0] num1,
 	output reg en0,
@@ -312,30 +339,30 @@ module Two_M_Select(
 );
 
 	always@(*) begin
-		if(rdy[0] == 1'b1) begin
+		if(rdy[0] == 1'b1 && issued[0] != 1'b1) begin
 			num0 <= 3'd0;
 			en0  <= 1'b1;
-			if(rdy[1] == 1'b1) begin
+			if(rdy[1] == 1'b1 && issued[1] != 1'b1) begin
 				num1 <= 3'd1;
 				en1  <= 1'b1;
                 en   <= 7'b0000011;
-			end else if(rdy[2] == 1'b1) begin
+			end else if(rdy[2] == 1'b1 && issued[2] != 1'b1) begin
 				num1 <= 3'd2;
 				en1  <= 1'b1;
                 en   <= 7'b0000101;
-			end else if(rdy[3] == 1'b1) begin
+			end else if(rdy[3] == 1'b1 && issued[3] != 1'b1) begin
 				num1 <= 3'd3;
 				en1  <= 1'b1;
                 en   <= 7'b0001001;
-			end else if(rdy[4] == 1'b1) begin
+			end else if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 				num1 <= 3'd4;
 				en1  <= 1'b1;
                 en   <= 7'b0010001;
-			end else if(rdy[5] == 1'b1) begin
+			end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 				num1 <= 3'd5;
 				en1  <= 1'b1;
                 en   <= 7'b0100001;
-			end else if(rdy[6] == 1'b1) begin
+			end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1000001;
@@ -344,26 +371,26 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0000001;
 			end
-		end else if(rdy[1] == 1'b1) begin
+		end else if(rdy[1] == 1'b1 && issued[1] != 1'b1) begin
 			num0 <= 3'd1;
 			en0  <= 1'b1;
-			if(rdy[2] == 1'b1) begin
+			if(rdy[2] == 1'b1 && issued[2] != 1'b1) begin
 				num1 <= 3'd2;
 				en1  <= 1'b1;
                 en   <= 7'b0000110;
-			end else if(rdy[3] == 1'b1) begin
+			end else if(rdy[3] == 1'b1 && issued[3] != 1'b1) begin
 				num1 <= 3'd3;
 				en1  <= 1'b1;
                 en   <= 7'b0001010;
-			end else if(rdy[4] == 1'b1) begin
+			end else if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 				num1 <= 3'd4;
 				en1  <= 1'b1;
                 en   <= 7'b0010010;
-			end else if(rdy[5] == 1'b1) begin
+			end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 				num1 <= 3'd5;
 				en1  <= 1'b1;
                 en   <= 7'b0100010;
-			end else if(rdy[6] == 1'b1) begin
+			end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1000010;
@@ -372,22 +399,22 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0000010;
 			end
-		end else if(rdy[2] == 1'b1) begin
+		end else if(rdy[2] == 1'b1 && issued[2] != 1'b1) begin
 			num0 <= 3'd2;
 			en0  <= 1'b1;
-			if(rdy[3] == 1'b1) begin
+			if(rdy[3] == 1'b1 && issued[3] != 1'b1) begin
 				num1 <= 3'd3;
 				en1  <= 1'b1;
                 en   <= 7'b0001100;
-			end else if(rdy[4] == 1'b1) begin
+			end else if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 				num1 <= 3'd4;
 				en1  <= 1'b1;
                 en   <= 7'b0010100;
-			end else if(rdy[5] == 1'b1) begin
+			end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 				num1 <= 3'd5;
 				en1  <= 1'b1;
                 en   <= 7'b0100100;
-			end else if(rdy[6] == 1'b1) begin
+			end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1000100;
@@ -396,18 +423,18 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0000100;
 			end
-		end else if(rdy[3] == 1'b1) begin
+		end else if(rdy[3] == 1'b1 && issued[3] != 1'b1) begin
 			num0 <= 3'd3;
 			en0  <= 1'b1;
-			if(rdy[4] == 1'b1) begin
+			if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 				num1 <= 3'd4;
 				en1  <= 1'b1;
                 en   <= 7'b0011000;
-			end else if(rdy[5] == 1'b1) begin
+			end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 				num1 <= 3'd5;
 				en1  <= 1'b1;
                 en   <= 7'b0101000;
-			end else if(rdy[6] == 1'b1) begin
+			end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1001000;
@@ -416,14 +443,14 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0001000;
 			end
-		end else if(rdy[4] == 1'b1) begin
+		end else if(rdy[4] == 1'b1 && issued[4] != 1'b1) begin
 			num0 <= 3'd4;
 			en0  <= 1'b1;
-			if(rdy[5] == 1'b1) begin
+			if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 				num1 <= 3'd5;
 				en1  <= 1'b1;
                 en   <= 7'b0110000;
-			end else if(rdy[6] == 1'b1) begin
+			end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1010000;
@@ -432,10 +459,10 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0010000;
 			end
-		end else if(rdy[5] == 1'b1) begin
+		end else if(rdy[5] == 1'b1 && issued[5] != 1'b1) begin
 			num0 <= 3'd5;
 			en0  <= 1'b1;
-			if(rdy[6] == 1'b1) begin
+			if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 				num1 <= 3'd6;
 				en1  <= 1'b1;
                 en   <= 7'b1100000;
@@ -444,7 +471,7 @@ module Two_M_Select(
 				en1  <= 1'b0;
                 en   <= 7'b0100000;
 			end
-		end else if(rdy[6] == 1'b1) begin
+		end else if(rdy[6] == 1'b1 && issued[6] != 1'b1) begin
 			num0 <= 3'd6;
 			en0  <= 1'b1;
 			num1 <= 3'd7;
