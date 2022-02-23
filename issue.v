@@ -1,3 +1,16 @@
+module issue(
+	input wire clk,
+	input wire resetn,
+	
+	input wire [31:0] inst0,
+	input wire [31:0] inst1,
+	input wire [31:0] inst2,
+	input wire [31:0] inst3,
+	input wire [2:0] inst_valid,
+);
+
+endmodule
+////////////////////////////////////////////////////////////////////////////////////////////////////
 module mux2x32(
     input wire s,
     input wire [31:0] a0,
@@ -1159,53 +1172,79 @@ module issue_queue_MUL_DIV(
 	assign IQ_s5 = ((out_en <= 3'd1) & out_en) ? (1'b1) : (1'b0);
 	assign IQ_s6 = ((out_en <= 3'd1) & out_en) ? (1'b1) : (1'b0);
 	
-	assign IQ_wakeup_data0 = wakeup0 == 2'b00 ? (IQ_data0) : (wakeup0 == 2'b01 ? ({IQ_data0}) : ());
+	assign IQ_wakeup_data0 = wakeup0 == 2'b00 ? (IQ_data0) : (wakeup0 == 2'b01 ? ({IQ_data0[120:115], 1'b1, {($signed(IQ_data0[113:80])) >>> 1}, IQ_data0[79:0]}) : (
+							 wakeup0 == 2'b10 ? ({IQ_data0[120:75], 1'b1, {($signed(IQ_data0[73:40])) >>> 1}, IQ_data0[39:0]}) : (
+							 					 {IQ_data0[120:115], 1'b1, {($signed(IQ_data0[113:80])) >>> 1}, IQ_data0[79:75], 1'b1, {($signed(IQ_data0[73:40])) >>> 1}, IQ_data0[39:0]})));
+
+	assign IQ_wakeup_data1 = wakeup1 == 2'b00 ? (IQ_data1) : (wakeup1 == 2'b01 ? ({IQ_data1[120:115], 1'b1, {($signed(IQ_data1[113:80])) >>> 1}, IQ_data1[79:0]}) : (
+							 wakeup1 == 2'b10 ? ({IQ_data1[120:75], 1'b1, {($signed(IQ_data1[73:40])) >>> 1}, IQ_data1[39:0]}) : (
+							 					 {IQ_data1[120:115], 1'b1, {($signed(IQ_data1[113:80])) >>> 1}, IQ_data1[79:75], 1'b1, {($signed(IQ_data1[73:40])) >>> 1}, IQ_data1[39:0]})));
+
+	assign IQ_wakeup_data2 = wakeup2 == 2'b00 ? (IQ_data2) : (wakeup2 == 2'b01 ? ({IQ_data2[120:115], 1'b1, {($signed(IQ_data2[113:80])) >>> 1}, IQ_data2[79:0]}) : (
+							 wakeup2 == 2'b10 ? ({IQ_data2[120:75], 1'b1, {($signed(IQ_data2[73:40])) >>> 1}, IQ_data2[39:0]}) : (
+							 					 {IQ_data2[120:115], 1'b1, {($signed(IQ_data2[113:80])) >>> 1}, IQ_data2[79:75], 1'b1, {($signed(IQ_data2[73:40])) >>> 1}, IQ_data2[39:0]})));
+
+	assign IQ_wakeup_data3 = wakeup3 == 2'b00 ? (IQ_data3) : (wakeup3 == 2'b01 ? ({IQ_data3[120:115], 1'b1, {($signed(IQ_data3[113:80])) >>> 1}, IQ_data3[79:0]}) : (
+							 wakeup3 == 2'b10 ? ({IQ_data3[120:75], 1'b1, {($signed(IQ_data3[73:40])) >>> 1}, IQ_data3[39:0]}) : (
+							 					 {IQ_data3[120:115], 1'b1, {($signed(IQ_data3[113:80])) >>> 1}, IQ_data3[79:75], 1'b1, {($signed(IQ_data3[73:40])) >>> 1}, IQ_data3[39:0]})));
+
+	assign IQ_wakeup_data4 = wakeup4 == 2'b00 ? (IQ_data4) : (wakeup4 == 2'b01 ? ({IQ_data4[120:115], 1'b1, {($signed(IQ_data4[113:80])) >>> 1}, IQ_data4[79:0]}) : (
+							 wakeup4 == 2'b10 ? ({IQ_data4[120:75], 1'b1, {($signed(IQ_data4[73:40])) >>> 1}, IQ_data4[39:0]}) : (
+							 					 {IQ_data4[120:115], 1'b1, {($signed(IQ_data4[113:80])) >>> 1}, IQ_data4[79:75], 1'b1, {($signed(IQ_data4[73:40])) >>> 1}, IQ_data4[39:0]})));
+
+	assign IQ_wakeup_data5 = wakeup5 == 2'b00 ? (IQ_data5) : (wakeup5 == 2'b01 ? ({IQ_data5[120:115], 1'b1, {($signed(IQ_data5[113:80])) >>> 1}, IQ_data5[79:0]}) : (
+							 wakeup5 == 2'b10 ? ({IQ_data5[120:75], 1'b1, {($signed(IQ_data5[73:40])) >>> 1}, IQ_data5[39:0]}) : (
+							 					 {IQ_data5[120:115], 1'b1, {($signed(IQ_data5[113:80])) >>> 1}, IQ_data5[79:75], 1'b1, {($signed(IQ_data5[73:40])) >>> 1}, IQ_data5[39:0]})));
+
+	assign IQ_wakeup_data6 = wakeup6 == 2'b00 ? (IQ_data6) : (wakeup6 == 2'b01 ? ({IQ_data6[120:115], 1'b1, {($signed(IQ_data6[113:80])) >>> 1}, IQ_data6[79:0]}) : (
+							 wakeup6 == 2'b10 ? ({IQ_data6[120:75], 1'b1, {($signed(IQ_data6[73:40])) >>> 1}, IQ_data6[39:0]}) : (
+							 					 {IQ_data6[120:115], 1'b1, {($signed(IQ_data6[113:80])) >>> 1}, IQ_data6[79:75], 1'b1, {($signed(IQ_data6[73:40])) >>> 1}, IQ_data6[39:0]})));
 
 	mux2x32 mux0(
 		.s(IQ_s0),
-		.a0(ISSUE_QUEUE[3'd0]),
-		.a1(ISSUE_QUEUE[3'd1]),
+		.a0(IQ_wakeup_data0),
+		.a1(IQ_wakeup_data1),
 		.out(IQ_update0)
 	);
 	
 	mux2x32 mux1(
 		.s(IQ_s1),
-		.a0(ISSUE_QUEUE[3'd1]),
-		.a1(ISSUE_QUEUE[3'd2]),
+		.a0(IQ_wakeup_data1),
+		.a1(IQ_wakeup_data2),
 		.out(IQ_update1)
 	);
 	
 	mux2x32 mux2(
 		.s(IQ_s2),
-		.a0(ISSUE_QUEUE[3'd2]),
-		.a1(ISSUE_QUEUE[3'd3]),
+		.a0(IQ_wakeup_data2),
+		.a1(IQ_wakeup_data3),
 		.out(IQ_update2)
 	);
 	
 	mux2x32 mux3(
 		.s(IQ_s3),
-		.a0(ISSUE_QUEUE[3'd3]),
-		.a1(ISSUE_QUEUE[3'd4]),
+		.a0(IQ_wakeup_data3),
+		.a1(IQ_wakeup_data4),
 		.out(IQ_update3)
 	);
 	
 	mux2x32 mux4(
 		.s(IQ_s4),
-		.a0(ISSUE_QUEUE[3'd4]),
-		.a1(ISSUE_QUEUE[3'd5]),
+		.a0(IQ_wakeup_data4),
+		.a1(IQ_wakeup_data5),
 		.out(IQ_update4)
 	);
 	
 	mux2x32 mux5(
 		.s(IQ_s5),
-		.a0(ISSUE_QUEUE[3'd5]),
-		.a1(ISSUE_QUEUE[3'd6]),
+		.a0(IQ_wakeup_data5),
+		.a1(IQ_wakeup_data6),
 		.out(IQ_update5)
 	);
 	
 	mux2x32 mux6(
 		.s(IQ_s6),
-		.a0(ISSUE_QUEUE[3'd6]),
+		.a0(IQ_wakeup_data6),
 		.a1(121'd0),
 		.out(IQ_update6)
 	);
