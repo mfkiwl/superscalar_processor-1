@@ -40,19 +40,26 @@ module rename(
     output wire [4:0] psrc2_R,
     output wire [4:0] psrc3_L,
     output wire [4:0] psrc3_R,
+    output wire [4:0] pdest0,
+    output wire [4:0] pdest1,
+    output wire [4:0] pdest2,
+    output wire [4:0] pdest3,
     
     output wire freelist_empty
 );
 
     wire [4:0] src0_L;
     wire [4:0] src0_R;
-    wire [4:0] w_dst0;
+    wire [4:0] dst0;
     wire [4:0] src1_L;
     wire [4:0] src1_R;
+    wire [4:0] dst1;
     wire [4:0] src2_L;
     wire [4:0] src2_R;
+    wire [4:0] dst2;
     wire [4:0] src3_L;
     wire [4:0] src3_R;
+    wire [4:0] dst3;
 
     wire w_en0;
     wire w_en1;
@@ -73,7 +80,7 @@ module rename(
     wire [4:0] rat_psrc3_L;
     wire [4:0] rat_psrc3_R;
 
-    wire [4:0] fl0;
+    wire [4:0] fl0; //data from freelist
     wire [4:0] fl1;
     wire [4:0] fl2;
     wire [4:0] fl3;
@@ -85,23 +92,32 @@ module rename(
     wire [1:0] select_Psrc3_L;
     wire [1:0] select_Psrc3_R;
 
+    wire [4:0] ppreg0;
+    wire [4:0] ppreg1;
+    wire [4:0] ppreg2;
+    wire [4:0] ppreg3;
+
     assign src0_L = rs_en0 ? rs0 : 5'd0;
     assign src0_R = rt_en0 & rd_en0 ? rt0 : 5'd0;
-    assign w_dst0 = rd_en0 ? rd0 : rt0;
+    assign dst0 = rd_en0 ? rd0 : rt0;
     assign src1_L = rs_en1 ? rs1 : 5'd0;
     assign src1_R = rt_en1 & rd_en1 ? rt1 : 5'd0;
-    assign w_dst1 = rd_en1 ? rd1 : rt1;
+    assign dst1 = rd_en1 ? rd1 : rt1;
     assign src2_L = rs_en2 ? rs2 : 5'd0;
     assign src2_R = rt_en2 & rd_en2 ? rt2 : 5'd0;
-    assign w_dst2 = rd_en2 ? rd2 : rt2;
+    assign dst2 = rd_en2 ? rd2 : rt2;
     assign src3_L = rs_en3 ? rs3 : 5'd0;
     assign src3_R = rt_en3 & rd_en3 ? rt3 : 5'd0;
-    assign w_dst3 = rd_en3 ? rd3 : rt3;
+    assign dst3 = rd_en3 ? rd3 : rt3;
 
     assign psrc0_L = rat_psrc0_L;
     assign psrc0_R = rat_psrc0_R;
     assign psrc1_L = select_Psrc1_L ? fl0 : rat_psrc1_L;
     assign psrc1_R = select_Psrc1_R ? fl0 : rat_psrc1_R;
+    assign pdest0  = w_en0 ? (fl0) : (w_en1 ? (fl1) : (w_en2 ? (fl2) : (w_en3 ? (fl3) : 5'd0)));
+    assign pdest1  = w_en1 ? (fl1) : (w_en2 ? (fl2) : (w_en3 ? (fl3) : 5'd0));
+    assign pdest2  = w_en2 ? (fl2) : (w_en3 ? (fl3) : 5'd0);
+    assign pdest3  = w_en3 ? (fl3) : 5'd0; 
 
     mux4x32 mux2_L(
         .s(select_Psrc2_L),
@@ -151,14 +167,14 @@ module rename(
         .src2_R(src2_R),
         .src3_L(src3_L),
         .src3_R(src3_R),
+        .dst0(dst0),
+        .dst1(dst1),
+        .dst2(dst2),
+        .dst3(dst3),
         .w_en0(w_en0),
         .w_en1(w_en1),
         .w_en2(w_en2),
         .w_en3(w_en3),
-        .w_dst0(w_dst0),
-        .w_dst1(w_dst1),
-        .w_dst2(w_dst2),
-        .w_dst3(w_dst3),
         .wr_data0(wr_data0),
         .wr_data1(wr_data1),
         .wr_data2(wr_data2),
@@ -172,14 +188,18 @@ module rename(
         .psrc2_L(rat_psrc2_L),
         .psrc2_R(rat_psrc2_R),
         .psrc3_L(rat_psrc3_L),
-        .psrc3_R(rat_psrc3_R)
+        .psrc3_R(rat_psrc3_R),
+        .ppreg0(ppreg0),
+        .ppreg1(ppreg1),
+        .ppreg2(ppreg2),
+        .ppreg3(ppreg3)
     );
 
     WAW_check waw_check_imp(
-        .w_dst0(w_dst0),
-        .w_dst1(w_dst1),
-        .w_dst2(w_dst2),
-        .w_dst3(w_dst3),
+        .dst0(dst0),
+        .dst1(dst1),
+        .dst2(dst2),
+        .dst3(dst3),
         .w_en0(w_en0),
         .w_en1(w_en1),
         .w_en2(w_en2),
@@ -189,10 +209,10 @@ module rename(
     freeList freelist_imp(
         .clk(clk),
         .resetn(resetn),
-        .data0(),
-        .data1(),
-        .data2(),
-        .data3(),
+        .data0(ppreg0),
+        .data1(ppreg1),
+        .data2(ppreg2),
+        .data3(ppreg3),
         .wen(),
         .ren(),
         .out_en(),
@@ -213,10 +233,10 @@ module rename(
         .src2_R(src2_R),
         .src3_L(src3_L),
         .src3_R(src3_R),
-        .w_dst0(w_dst0),
-        .w_dst1(w_dst1),
-        .w_dst2(w_dst2),
-        .w_dst3(w_dst3),
+        .dst0(dst0),
+        .dst1(dst1),
+        .dst2(dst2),
+        .dst3(dst3),
         .select_Psrc1_L(select_Psrc1_L),
         .select_Psrc1_R(select_Psrc1_R),
         .select_Psrc2_L(select_Psrc2_L),
@@ -243,16 +263,15 @@ module sRAT(
     input wire [4:0] src2_R,
     input wire [4:0] src3_L,
     input wire [4:0] src3_R,
+    input wire [4:0] dst0,
+    input wire [4:0] dst1,
+    input wire [4:0] dst2,
+    input wire [4:0] dst3,
 
     input wire w_en0,
     input wire w_en1,
     input wire w_en2,
     input wire w_en3,
-
-    input wire [4:0] w_dst0,
-    input wire [4:0] w_dst1,
-    input wire [4:0] w_dst2,
-    input wire [4:0] w_dst3,
     
     input wire [4:0] wr_data0,
     input wire [4:0] wr_data1,
@@ -262,14 +281,18 @@ module sRAT(
     input wire restore_en,
     input wire [127:0] aRAT_value,
 
-    output [4:0] psrc0_L,
-    output [4:0] psrc0_R,
-    output [4:0] psrc1_L,
-    output [4:0] psrc1_R,
-    output [4:0] psrc2_L,
-    output [4:0] psrc2_R,
-    output [4:0] psrc3_L,
-    output [4:0] psrc3_R
+    output wire [4:0] psrc0_L,
+    output wire [4:0] psrc0_R,
+    output wire [4:0] psrc1_L,
+    output wire [4:0] psrc1_R,
+    output wire [4:0] psrc2_L,
+    output wire [4:0] psrc2_R,
+    output wire [4:0] psrc3_L,
+    output wire [4:0] psrc3_R,
+    output wire [4:0] ppreg0,
+    output wire [4:0] ppreg1,
+    output wire [4:0] ppreg2,
+    output wire [4:0] ppreg3
 );
 
     reg [4:0] rat[0:31];
@@ -282,6 +305,10 @@ module sRAT(
     assign psrc2_R = rat[src2_R];
     assign psrc3_L = rat[src3_L];
     assign psrc3_R = rat[src3_R];
+    assign ppreg0  = rat[dst0];
+    assign ppreg1  = rat[dst1];
+    assign ppreg2  = rat[dst2];
+    assign ppreg3  = rat[dst3];
 
     always @(posedge clk) begin
         if(~resetn) begin : initialize
@@ -324,22 +351,22 @@ module sRAT(
             rat[32'd31] <= aRAT_value[3  :  0];
         end else if(write_en)begin
             if(w_en0) begin
-                rat[w_dst0] <= wr_data0;
+                rat[dst0] <= wr_data0;
             end
             if(w_en1) begin
-                rat[w_dst1] <= wr_data1;
+                rat[dst1] <= wr_data1;
             end
             if(w_en2) begin
-                rat[w_dst2] <= wr_data2;
+                rat[dst2] <= wr_data2;
             end
             if(w_en3) begin
-                rat[w_dst3] <= wr_data3;
+                rat[dst3] <= wr_data3;
             end
         end else begin
-            rat[w_dst0] <= rat[w_dst0];
-            rat[w_dst1] <= rat[w_dst1];
-            rat[w_dst2] <= rat[w_dst2];
-            rat[w_dst3] <= rat[w_dst3];
+            rat[dst0] <= rat[dst0];
+            rat[dst1] <= rat[dst1];
+            rat[dst2] <= rat[dst2];
+            rat[dst3] <= rat[dst3];
         end
     end
 
@@ -356,10 +383,10 @@ module RAW_check(
     input wire [4:0] src3_L,
     input wire [4:0] src3_R,
 
-    input wire [4:0] w_dst0,
-    input wire [4:0] w_dst1,
-    input wire [4:0] w_dst2,
-    input wire [4:0] w_dst3,
+    input wire [4:0] dst0,
+    input wire [4:0] dst1,
+    input wire [4:0] dst2,
+    input wire [4:0] dst3,
 
     output wire select_Psrc1_L,
     output wire select_Psrc1_R,
@@ -369,27 +396,27 @@ module RAW_check(
     output wire [1:0] select_Psrc3_R
 );
 
-    assign select_Psrc1_L = (src1_L == w_dst0) ? 1'b1 : 1'b0;
-    assign select_Psrc1_R = (src1_R == w_dst0) ? 1'b1 : 1'b0;
+    assign select_Psrc1_L = (src1_L == dst0) ? 1'b1 : 1'b0;
+    assign select_Psrc1_R = (src1_R == dst0) ? 1'b1 : 1'b0;
 
-    assign select_Psrc2_L[0] = (src2_L == w_dst0) & (~(src2_L == w_dst1));
-    assign select_Psrc2_L[1] = (src2_L == w_dst1);
-    assign select_Psrc2_R[0] = (src2_R == w_dst0) & (~(src2_R == w_dst1));
-    assign select_Psrc2_R[1] = (src2_R == w_dst1);
+    assign select_Psrc2_L[0] = (src2_L == dst0) & (~(src2_L == dst1));
+    assign select_Psrc2_L[1] = (src2_L == dst1);
+    assign select_Psrc2_R[0] = (src2_R == dst0) & (~(src2_R == dst1));
+    assign select_Psrc2_R[1] = (src2_R == dst1);
 
-    assign select_Psrc3_L[0] = (src3_L == w_dst2) | (~(src3_L == w_dst1) & (src3_L == w_dst0));
-    assign select_Psrc3_L[1] = (src3_L == w_dst2) | (src3_L == w_dst1);
-    assign select_Psrc3_R[0] = (src3_R == w_dst2) | (~(src3_R == w_dst1) & (src3_R == w_dst0));
-    assign select_Psrc3_R[1] = (src3_R == w_dst2) | (src3_R == w_dst1);
+    assign select_Psrc3_L[0] = (src3_L == dst2) | (~(src3_L == dst1) & (src3_L == dst0));
+    assign select_Psrc3_L[1] = (src3_L == dst2) | (src3_L == wst1);
+    assign select_Psrc3_R[0] = (src3_R == dst2) | (~(src3_R == dst1) & (src3_R == dst0));
+    assign select_Psrc3_R[1] = (src3_R == dst2) | (src3_R == dst1);
 
 endmodule
 
 //////////////////////////////////////////////////
 module WAW_check(
-    input wire [4:0] w_dst0,
-    input wire [4:0] w_dst1,
-    input wire [4:0] w_dst2,
-    input wire [4:0] w_dst3,
+    input wire [4:0] dst0,
+    input wire [4:0] dst1,
+    input wire [4:0] dst2,
+    input wire [4:0] dst3,
 
     output wire w_en0,
     output wire w_en1,
@@ -397,9 +424,9 @@ module WAW_check(
     output wire w_en3
 );
 
-    assign w_en0 = (w_dst0 == w_dst1) | (w_dst0 == w_dst2) | (w_dst0 == w_dst3);
-    assign w_en1 = (w_dst1 == w_dst2) | (w_dst1 == w_dst3);
-    assign w_en2 = (w_dst2 == w_dst3);
+    assign w_en0 = (dst0 == dst1) | (dst0 == dst2) | (dst0 == dst3);
+    assign w_en1 = (dst1 == dst2) | (dst1 == dst3);
+    assign w_en2 = (dst2 == dst3);
     assign w_en3 = 1'b1;
 
 endmodule

@@ -400,3 +400,24 @@
 
 - [ ] 译码阶段需要根据发送到的发射队列对指令进行标记，当从流水线寄存器输出至issue时，issue根据指令中的标记将指令发送到相应的发射队列中
 - [ ] 需要对发射队列的宽度进行更新，用于存储更加具体的指令信息，如立即数和指令操作等
+
+
+
+### 2022.2.24
+
+---
+
+1. 继续开发`issue.v`
+2. 对发射队列宽度进行修改
+    1. 修改`issue_queue_ALU`发射队列的宽度为, 2 bits types, 9 bits operations, 26 bits imm, 5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 1 bit Issued，共58 bits
+    2. 修改`issue_queue_Load_Store`发射队列宽度为, 5 bits operations, 16 bits imm, 5 bits SrcL, 1 bit ValL, 1 bit RdyL, 5 bits SrcR, 1 bit ValR, 1 bit RdyR, 5 bits Dest, 1 bit SrcR_imm_valid, 1 bit Issued，共42 bits
+    3. 修改`issue_queue_MUL_DIV`发射队列宽度为, 4 bits operations, 1 bit Issued, 5 bits SrcL, 1 bit SrcL_M, 34 bits SrcL_SHIFT, 5 bits SrcR, 1 bit SrcR_M, 34 bits SrcR_SHIFT, 5 bits Dest, 34 bits delay，共124 bits
+3. 调整`register_rename.v`，修改语义不明的信号
+
+**问题**
+
+- [ ] 寄存器重命名中需要根据freelist是否有足够的空余寄存器和是否有足够的指令来决定写入数量
+
+**目标**
+
+- [ ] 修改译码阶段的信号

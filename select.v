@@ -1,27 +1,31 @@
-module select(
-    input wire [20:0] IQ_ALU_dout0,
-    input wire [20:0] IQ_ALU_dout1,
-    input wire [20:0] IQ_ALU_dout2,
-    input wire [20:0] IQ_ALU_dout3,
-    input wire [20:0] IQ_ALU_dout4,
-    input wire [20:0] IQ_ALU_dout5,
-    input wire [20:0] IQ_ALU_dout6,
+module select#(
+	parameter IQ_ALU_WIDTH = 58,
+	parameter IQ_MD_WIDTH  = 124,
+	parameter IQ_LS_WIDTH  = 42
+)(
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout0,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout1,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout2,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout3,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout4,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout5,
+    input wire [IQ_ALU_WIDTH-1:0] IQ_ALU_dout6,
 
-    input wire [20:0] IQ_LS_dout0,
-    input wire [20:0] IQ_LS_dout1,
-    input wire [20:0] IQ_LS_dout2,
-    input wire [20:0] IQ_LS_dout3,
-    input wire [20:0] IQ_LS_dout4,
-    input wire [20:0] IQ_LS_dout5,
-    input wire [20:0] IQ_LS_dout6,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout0,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout1,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout2,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout3,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout4,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout5,
+    input wire [IQ_LS_WIDTH-1:0] IQ_LS_dout6,
 
-    input wire [120:0] IQ_MD_dout0,
-    input wire [120:0] IQ_MD_dout1,
-    input wire [120:0] IQ_MD_dout2,
-    input wire [120:0] IQ_MD_dout3,
-    input wire [120:0] IQ_MD_dout4,
-    input wire [120:0] IQ_MD_dout5,
-    input wire [120:0] IQ_MD_dout6,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout0,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout1,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout2,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout3,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout4,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout5,
+    input wire [IQ_MD_WIDTH-1:0] IQ_MD_dout6,
 
     output wire [2:0] IQ_ALU_select_num0,
     output wire IQ_ALU_select_en0,
@@ -89,13 +93,13 @@ module select(
 	wire wakeup_LS_en;
 
 	assign rdy_MD = {
-		IQ_MD_dout6[80] & (IQ_MD_dout6[40] || IQ_MD_dout6[39]),
-		IQ_MD_dout5[80] & (IQ_MD_dout5[40] || IQ_MD_dout5[39]),
-		IQ_MD_dout4[80] & (IQ_MD_dout4[40] || IQ_MD_dout4[39]),
-		IQ_MD_dout3[80] & (IQ_MD_dout3[40] || IQ_MD_dout3[39]),
-		IQ_MD_dout2[80] & (IQ_MD_dout2[40] || IQ_MD_dout2[39]),
-		IQ_MD_dout1[80] & (IQ_MD_dout1[40] || IQ_MD_dout1[39]),
-		IQ_MD_dout0[80] & (IQ_MD_dout0[40] || IQ_MD_dout0[39])
+		IQ_MD_dout6[79] & IQ_MD_dout6[39],
+		IQ_MD_dout5[79] & IQ_MD_dout5[39],
+		IQ_MD_dout4[79] & IQ_MD_dout4[39],
+		IQ_MD_dout3[79] & IQ_MD_dout3[39],
+		IQ_MD_dout2[79] & IQ_MD_dout2[39],
+		IQ_MD_dout1[79] & IQ_MD_dout1[39],
+		IQ_MD_dout0[79] & IQ_MD_dout0[39]
 	};
 
 	assign rdy_LS = {
@@ -119,13 +123,13 @@ module select(
 	};
 
 	assign issued_MD = {
-		IQ_MD_dout6[120],
-		IQ_MD_dout5[120],
-		IQ_MD_dout4[120],
-		IQ_MD_dout3[120],
-		IQ_MD_dout2[120],
-		IQ_MD_dout1[120],
-		IQ_MD_dout0[120]
+		IQ_MD_dout6[119],
+		IQ_MD_dout5[119],
+		IQ_MD_dout4[119],
+		IQ_MD_dout3[119],
+		IQ_MD_dout2[119],
+		IQ_MD_dout1[119],
+		IQ_MD_dout0[119]
 	};
 
 	assign issued_LS = {
@@ -204,32 +208,32 @@ module select(
 							(IQ_LS_dout6[8] && ((IQ_LS_dout6[13:9] == wakeup_reg_ALU0) || (IQ_LS_dout6[13:9] == wakeup_reg_ALU1))) || IQ_LS_dout6[7] || IQ_LS_dout6[0] || IQ_LS_dout6[1]
 	};
 
-	assign IQ_MD_wakeup0 = {(wakeup_reg_MD == IQ_MD_dout0[119:115]) ? (1'b1) : ((IQ_MD_dout0[114] && select_en_MD && (select_num_MD == 3'd0)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout0[79:75]) ? (1'b1) : ((IQ_MD_dout0[74] && select_en_MD && (select_num_MD == 3'd0)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup0 = {(wakeup_reg_MD == IQ_MD_dout0[118:114]) ? (1'b1) : ((IQ_MD_dout0[113] && select_en_MD && (select_num_MD == 3'd0)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout0[78:74]) ? (1'b1) : ((IQ_MD_dout0[73] && select_en_MD && (select_num_MD == 3'd0)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup1 = {(wakeup_reg_MD == IQ_MD_dout1[119:115]) ? (1'b1) : ((IQ_MD_dout1[114] && select_en_MD && (select_num_MD == 3'd1)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout1[79:75]) ? (1'b1) : ((IQ_MD_dout1[74] && select_en_MD && (select_num_MD == 3'd1)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup1 = {(wakeup_reg_MD == IQ_MD_dout1[118:114]) ? (1'b1) : ((IQ_MD_dout1[113] && select_en_MD && (select_num_MD == 3'd1)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout1[78:74]) ? (1'b1) : ((IQ_MD_dout1[73] && select_en_MD && (select_num_MD == 3'd1)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup2 = {(wakeup_reg_MD == IQ_MD_dout2[119:115]) ? (1'b1) : ((IQ_MD_dout2[114] && select_en_MD && (select_num_MD == 3'd2)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout2[79:75]) ? (1'b1) : ((IQ_MD_dout2[74] && select_en_MD && (select_num_MD == 3'd2)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup2 = {(wakeup_reg_MD == IQ_MD_dout2[118:114]) ? (1'b1) : ((IQ_MD_dout2[113] && select_en_MD && (select_num_MD == 3'd2)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout2[78:74]) ? (1'b1) : ((IQ_MD_dout2[73] && select_en_MD && (select_num_MD == 3'd2)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup3 = {(wakeup_reg_MD == IQ_MD_dout3[119:115]) ? (1'b1) : ((IQ_MD_dout3[114] && select_en_MD && (select_num_MD == 3'd3)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout3[79:75]) ? (1'b1) : ((IQ_MD_dout3[74] && select_en_MD && (select_num_MD == 3'd3)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup3 = {(wakeup_reg_MD == IQ_MD_dout3[118:114]) ? (1'b1) : ((IQ_MD_dout3[113] && select_en_MD && (select_num_MD == 3'd3)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout3[78:74]) ? (1'b1) : ((IQ_MD_dout3[73] && select_en_MD && (select_num_MD == 3'd3)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup4 = {(wakeup_reg_MD == IQ_MD_dout4[119:115]) ? (1'b1) : ((IQ_MD_dout4[114] && select_en_MD && (select_num_MD == 3'd4)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout4[79:75]) ? (1'b1) : ((IQ_MD_dout4[74] && select_en_MD && (select_num_MD == 3'd4)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup4 = {(wakeup_reg_MD == IQ_MD_dout4[118:114]) ? (1'b1) : ((IQ_MD_dout4[113] && select_en_MD && (select_num_MD == 3'd4)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout4[78:74]) ? (1'b1) : ((IQ_MD_dout4[73] && select_en_MD && (select_num_MD == 3'd4)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup5 = {(wakeup_reg_MD == IQ_MD_dout5[119:115]) ? (1'b1) : ((IQ_MD_dout5[114] && select_en_MD && (select_num_MD == 3'd5)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout5[79:75]) ? (1'b1) : ((IQ_MD_dout5[74] && select_en_MD && (select_num_MD == 3'd5)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup5 = {(wakeup_reg_MD == IQ_MD_dout5[118:114]) ? (1'b1) : ((IQ_MD_dout5[113] && select_en_MD && (select_num_MD == 3'd5)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout5[78:74]) ? (1'b1) : ((IQ_MD_dout5[73] && select_en_MD && (select_num_MD == 3'd5)) ? (1'b0) : (1'b1))
 	};
 
-	assign IQ_MD_wakeup6 = {(wakeup_reg_MD == IQ_MD_dout6[119:115]) ? (1'b1) : ((IQ_MD_dout6[114] && select_en_MD && (select_num_MD == 3'd6)) ? (1'b0) : (1'b1)),
-							(wakeup_reg_MD == IQ_MD_dout6[79:75]) ? (1'b1) : ((IQ_MD_dout6[74] && select_en_MD && (select_num_MD == 3'd6)) ? (1'b0) : (1'b1))
+	assign IQ_MD_wakeup6 = {(wakeup_reg_MD == IQ_MD_dout6[118:114]) ? (1'b1) : ((IQ_MD_dout6[113] && select_en_MD && (select_num_MD == 3'd6)) ? (1'b0) : (1'b1)),
+							(wakeup_reg_MD == IQ_MD_dout6[78:74]) ? (1'b1) : ((IQ_MD_dout6[73] && select_en_MD && (select_num_MD == 3'd6)) ? (1'b0) : (1'b1))
 	};
 
 	One_M_Select Select_MD(
